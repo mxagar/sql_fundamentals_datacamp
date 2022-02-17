@@ -153,6 +153,8 @@ Some general notes:
 - Statements can be in one or multiple lines
 - A statement finishes with `;`
 
+We need to think that SQL statements are usually the translation to code of business questions.
+
 ###  `SELECT`
 
  `SELECT` is used to extract the entries of desired columns from desired tables.
@@ -160,15 +162,18 @@ Some general notes:
 ```sql
 -- Grab two columns from a table
 -- Note that query order is irrelevant
--- SQL might also return in another order, actually the most efficient one
+-- SQL might return entries/rows in an unordered order, actually the most efficient one
 SELECT column_1, column_2 FROM table_name;
 -- Grab all columns from a table
 -- Do it only if necessary, since we might be pulling a lot of data!
 -- It is often a quick & dirty way of visualizing all the columns/fields of a table
 SELECT * FROM table_name;
+-- 
 -- dvdrental examples
 SELECT * FROM actor;
+-- 
 SELECT last_name, first_name FROM actor;
+--
 SELECT first_name, last_name, email FROM customer;
 ```
 
@@ -199,8 +204,10 @@ SELECT COUNT(*) FROM table_name;
 -- It makes sense to combine it with conditions or other functions
 -- Count number of distinct last names from all customers
 SELECT COUNT(DISTINCT(last_name)) FROM customer;
+--
 -- dvdrental examples
 SELECT COUNT(*) FROM payment;
+--
 SELECT COUNT(DISTINCT(amount)) FROM payment;
 ```
 
@@ -212,7 +219,11 @@ Conditions can be defined with:
 - comparison operators: `=, >, <, >=, <=, <>, !=`
 - logical operators: `AND, OR, NOT`
 
-Note that there is no `==` and that not-equal can be done in two ways: `<>, !=`
+Notes:
+
+- There is no `==` and that not-equal can be done in two ways: `<>, !=`.
+- The condition columns don't need to appear in the `SELECT` clause.
+- Strings are passed with single quotes `'string'` and comparisons are case-sensitive.
 
 ```sql
 -- General syntax (it can be in one line)
@@ -227,7 +238,118 @@ WHERE name = 'David';
 SELECT name, choice
 FROM table
 WHERE name = 'David' AND choice = 'Red';
+--
 -- dvdrental examples
 SELECT * FROM customer
 WHERE first_name = 'Jared';
+--
+SELECT title FROM film
+WHERE rental_rate > 4 AND replacement_cost > 19.99 AND rating = 'R';
+--
+SELECT COUNT(*) FROM film
+WHERE rental_rate > 4 AND replacement_cost > 19.99 AND rating = 'R';
+--
+SELECT COUNT(*) FROM film
+WHERE rating = 'R' OR rating = 'PG-13';
+--
+SELECT email FROM customer
+WHERE first_name = 'Nancy' AND last_name = 'Thomas';
+--
+SELECT phone FROM address
+WHERE address = '23 Workhaven Lane'; 
+```
+
+###  `ORDER BY`
+
+SQL queries return entries in different orders, depending on the most efficient way of retrieving them each time. However, we can control the order in which the entries appear. This is done at the end of the query, by indicating the column(s) with respect to which we'd like to order and whether we want ascending/descending order.
+
+Notes:
+- Ordering wrt. several columns is usual when a column has duplicate entries, e.g., order by company name and sold amount.
+- We can define the order to specific columns.
+- Usually, `ORDER BY` appears at the end, but `LIMIT` can go after it.
+
+```sql
+-- General syntax
+SELECT col_1, col_2
+FROM table_a
+WHERE condition_alpha
+ORDER BY col_3, col_4 DESC; -- default is ASC
+--
+-- dvdrental examples
+-- We can define DESC/ASC to specific columns
+SELECT store_id, first_name, last_name FROM customer
+ORDER BY store_id DESC, first_name ASC;
+```
+
+###  `LIMIT`
+
+`LIMIT` specifies the number of rows/queries we want. It is often used with `ORDER BY` to get the first/last X entries of a business question.
+
+```sql
+-- General syntax
+SELECT col_1,
+FROM table_a
+WHERE condition_alpha
+ORDER BY col_2 DESC
+LIMIT N; -- N is an integer
+--
+-- dvdrental examples
+-- Which are the 5 most recent and valid (!= 0 ) payments?
+SELECT * FROM payment
+WHERE amount != 0
+ORDER BY payment_date DESC
+limit 5;
+-- Which are the customer IDs of the first 10 customers who created a payment?
+SELECT customer_id
+FROM payment
+WHERE amount != 0
+ORDER BY payment_date ASC
+LIMIT 10;
+-- Which are the titles of the 5 shortest movies?
+-- Note that 'length' is a SQL token; we should avoid using such column names!
+SELECT title, length
+FROM film
+ORDER BY length ASC
+LIMIT 5;
+-- How many movies last 50 minutes or below?
+SELECT COUNT(title)
+FROM film
+WHERE length <= 50;
+```
+
+###  `BETWEEN`
+
+`BETWEEN` can be used to define ranges of values in conditions.
+It is equivalent to using `>= X AND <= Y`.
+
+Notes:
+- We can combine it with `NOT`.
+- We can use it with dates if they are formatted following the ISO 8601 `YYYY-MM-DD`; however, note that the ISO format contains hours and minutes, too, and inclusivity/exclusivity issues might arise depending on when it is considered the day starts.
+
+```sql
+-- dvdrental examples
+-- Payments in value between [8,9]
+SELECT *
+FROM payment
+WHERE amount BETWEEN 8 AND 9;
+-- Count the payments out from that region
+SELECT COUNT(*)
+FROM payment
+WHERE amount NOT BETWEEN 8 AND 9;
+-- Number of payments the first 2 weeks of February 2007
+SELECT COUNT(*)
+FROM payment
+WHERE payment_date BETWEEN '2007-02-01' AND '2007-02-15';
+```
+
+###  `IN`
+
+The `IN` operator allows to write conditions in which a field-entry value must be in a set of possible values; it is equivalent to `BETWEEN` but for categorical data.
+
+```sql
+-- General syntax
+SELECT *
+FROM clothes
+WHERE color IN ('red', 'blue')
+
 ```
