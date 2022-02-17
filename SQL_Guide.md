@@ -23,8 +23,12 @@ The [The Complete SQL Bootcamp](https://www.udemy.com/course/the-complete-sql-bo
 
 **Overview**
 
-1. A
-2. B
+1. Introduction & Setup
 
 ## 1. Introduction & Setup
+
+Relational databases are collections of inter-related tables able to collect very large amounts of data.
+SQL is the interfacing language with which we can interact with those relational databases.
+Each table is like a spreadsheet tab (but can contain much more data): columns are fields, rows are entries.
+There are many implementations of SQL, being [PostgreSQL](https://en.wikipedia.org/wiki/PostgreSQL) one of them: it is open source, free; PostgreSQL has additional methods, but they are clearly warned here.
 
