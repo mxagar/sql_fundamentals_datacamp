@@ -1,4 +1,4 @@
-# SQL Fundamentals
+# SQL Guide
 
 This repository contains my notes after following as refreshers the [SQL Fundamentals skill track](https://app.datacamp.com/learn/skill-tracks/sql-fundamentals) from Datacamp and [The Complete SQL Bootcamp](https://www.udemy.com/course/the-complete-sql-bootcamp/) by José Marcial Portilla from Udemy.
 
@@ -21,7 +21,10 @@ The [The Complete SQL Bootcamp](https://www.udemy.com/course/the-complete-sql-bo
 7. Conditional Expressions and Procedures
 8. PostGreSQL with Python
 
-The file `./SQL_Guide.md` is a summary/guide of my notes and SQL in general.
+**Overview**
 
-Mikel Sagardia, 2022.
-No warranties.
+1. A
+2. B
+
+## 1. Introduction & Setup
+
