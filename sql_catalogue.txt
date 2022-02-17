@@ -1,0 +1,4 @@
+This is a TXT form cheat sheet for SQL statements.
+Mikel Sagardia, 2022.
+No warranties.
+
