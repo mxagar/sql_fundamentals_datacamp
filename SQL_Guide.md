@@ -13,9 +13,21 @@ The [SQL Fundamentals skill track](https://app.datacamp.com/learn/skill-tracks/s
 The [The Complete SQL Bootcamp](https://www.udemy.com/course/the-complete-sql-bootcamp/) is composed by the following sections:
 
 1. Introduction & Setup
+   - 1.1 Installation: `PostgreSQL` & `pgAdmin`
+   - 1.2 `pgAdmin` Overview
 2. SQL Statement Fundamentals
-3. GROUP BY Statements
-4. JOINS
+   - `SELECT`
+   - `SELECT DISTINCT`
+   - `COUNT`
+   - `SELECT WHERE`
+   - `ORDER BY`
+   - `LIMIT`
+   - `BETWEEN`
+   - `IN`
+   - `LIKE` and `ILIKE`
+   - Challenges / Exercises
+3. `GROUP BY` Statements
+4. `JOINS`
 5. Advanced SQL Commands
 6. Creating Databases and Tables
 7. Conditional Expressions and Procedures
@@ -149,9 +161,12 @@ A database (DB) is composed by tables that contain columns or fields. In `pgAdmi
 - subitems `Tables`, `Columns`
 
 Some general notes:
-- Comments are created with `--`; that can be anywhere
-- Statements can be in one or multiple lines
-- A statement finishes with `;`
+
+- Comments are created with `--`; they can be at beginning/end of line.
+- Statements can be in one or multiple lines.
+- A statement finishes with `;`.
+- Numbers (int/float) are represented by regular numbers.
+- Strings and dates are represented by single quotes: 'text'.
 
 We need to think that SQL statements are usually the translation to code of business questions.
 
@@ -346,10 +361,82 @@ WHERE payment_date BETWEEN '2007-02-01' AND '2007-02-15';
 
 The `IN` operator allows to write conditions in which a field-entry value must be in a set of possible values; it is equivalent to `BETWEEN` but for categorical data.
 
+NOtes:
+- The categories can be numbers, too.
+- We can use `NOT IN`.
+
 ```sql
 -- General syntax
 SELECT *
 FROM clothes
 WHERE color IN ('red', 'blue')
+--
+-- dvdrental examples
+-- Which payments equal to 0.99 or 1.99 USD?
+SELECT *
+FROM payment
+WHERE amount IN (0.99, 1.99);
+--
+SELECT *
+FROM payment
+WHERE amount NOT IN (0.99, 1.99);
+```
 
+###  `LIKE` and `ILIKE`
+
+`LIKE` and `ILIKE` are used to match patterns. `LIKE` is case-sensitive, `ILIKE` is case-insensitive. We can also use them in combination with `NOT` or any logical operator.
+
+We need to consider these wildcards, which can be combined:
+
+- `_`: any one character or single digit, not blank/null.
+- `%`: a sequence of any characters or digits; it could be also null = nothing, blank.
+  - All names that start with 'A': `'A%'`
+  - All names that end with 'a': `'%a'`
+
+SQL supports full regex capabilities.
+
+```sql
+--
+-- dvdrental examples
+-- Who among the customers has a name starting with J?
+SELECT *
+FROM customer
+WHERE first_name LIKE 'J%'
+-- How many among the customers have a name starting with J and surname with S?
+SELECT COUNT(*)
+FROM customer
+WHERE first_name ILIKE 'j%' AND last_name ILIKE 's%';
+-- Cutomers with names not containing 'her' after the initial?
+SELECT *
+FROM customer
+WHERE first_name NOT LIKE '_her%';
+```
+
+### Challenges / Exercises
+
+```sql
+-- dvdrental DB
+-- How many payments were larger than 5 USD?
+SELECT COUNT(*)
+FROM payment
+WHERE amount > 5.00;
+-- How many actors have a first name that starts with letter P?
+SELECT COUNT(actor)
+FROM actor
+WHERE first_name LIKE 'P%';
+-- How many unique districts are our customers from?
+SELECT COUNT(DISTINCT(district))
+FROM address;
+-- Get list of names of those districts
+SELECT DISTINCT(district)
+FROM address;
+-- How many films have a rating of R and a replacement cost between 5 and 15 USD?
+SELECT COUNT(title)
+FROM film
+WHERE rating = 'R'
+AND replacement_cost BETWEEN 5 AND 15;
+-- How many films have the word 'Truman' in their title?
+SELECT COUNT(title)
+FROM film
+WHERE title LIKE '%Truman%';
 ```
