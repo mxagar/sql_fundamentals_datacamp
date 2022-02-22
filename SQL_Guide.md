@@ -15,6 +15,7 @@ The [The Complete SQL Bootcamp](https://www.udemy.com/course/the-complete-sql-bo
 1. Introduction & Setup
    - 1.1 Installation: `PostgreSQL` & `pgAdmin`
    - 1.2 `pgAdmin` Overview
+   - 1.3 Command Line Interface (CLI): Installation & Setup on Mac
 2. SQL Statement Fundamentals
    - `SELECT`
    - `SELECT DISTINCT`
@@ -149,6 +150,39 @@ DB, right click -> Query Tool (dvdrental)
             Copy / Copy to Editor
         Output: result after running the query
     To execute a query: Run / Play / F5
+```
+
+### 1.3 Command Line Interface (CLI): Installation & Setup on Mac
+
+I found the following URL and followed what's explained in it:
+[https://www.timescale.com/blog/how-to-install-psql-on-mac-ubuntu-debian-windows/](https://www.timescale.com/blog/how-to-install-psql-on-mac-ubuntu-debian-windows/)
+
+Mac installation:
+
+```bash
+brew doctor
+brew update
+brew install libpq
+# After installation, add paths
+echo 'export PATH="/opt/homebrew/opt/libpq/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+After installation, we can connect to a database started via `pgAdmin` or any other UI as follows using the CLI (Terminal):
+
+```bash
+#psql -h [HOSTNAME] -p [PORT] -U [USERNAME] -W -d [DATABASENAME]
+psql -h localhost -p 5432 -U postgres -W -d dvdrental
+# PostgreSQL user (postgres) pw is requested due to option -W: we insert the defined one
+# The prompt appears
+# dvdrental=#
+# Now, we can enter in the prompt any SQL query we want
+# but with proper capitals and ending with ;
+SELECT COUNT(*) FROM film;
+# For help
+help
+# To exit the connection
+\q
 ```
 
 ## 2. SQL Statement Fundamentals
@@ -439,4 +473,87 @@ AND replacement_cost BETWEEN 5 AND 15;
 SELECT COUNT(title)
 FROM film
 WHERE title LIKE '%Truman%';
+```
+
+## 3. `GROUP BY` Statements
+
+### 3.1 Aggregate Functions
+
+Aggregate functions take multiple inputs and return a single output. Official documentation:
+
+[Aggregate Functionsin PostgreSQL](https://www.postgresql.org/docs/9.5/functions-aggregate.html)
+
+Aggregate function calls happen **only** in the `SELECT` or the `HAVING` clause.
+Common aggregate functions:
+
+- `AVG()`: it is often combined with `ROUND()` to cut decimal places
+- `COUNT()`: it is usually used as `COUNT(*)`, since it returns the number of **rows**, no matter the column.
+- `MAX()`
+- `MIN()`
+- `SUM()`
+- `STDDEV_POP()`: population standard deviation
+- `STDDEV_SAMP()`: sample standard deviation
+- `CORR(Y, X)`: correlation coefficient; X is independent, Y is dependent variable
+- `REGR_INTERCEPT(Y, X)`: intercept of linear regression
+- `REGR_R2(Y, X)`: R2 of linear regression
+- `REGR_SLOPE(Y, X)`: slope of linear regression
+- ...
+
+Examples:
+
+```sql
+-- All films
+SELECT * FROM film;
+-- Which is the minimum/maximum replacement value?
+SELECT MIN(replacement_cost) FROM film;
+SELECT MAX(replacement_cost) FROM film;
+-- Note that it doesn't make sense to add more columns after an aggregate function
+-- unless that column is the input of an aggregate function, too!
+SELECT MAX(replacement_cost), MIN(replacement_cost) FROM film;
+-- If arithmetic operations performed, use ROUND(number,decimals)
+SELECT AVG(replacement_cost) FROM film;
+SELECT ROUND(AVG(replacement_cost),2) FROM film;
+```
+
+### 3.2 `GROUP BY`
+
+`GROUP BY` takes a categorical column (categories can be continuous numbers, e.g.: 0.99, 1.99, 4.99, etc.) and groups rows depending on the categories that the rows have in the categorical column. After that grouping, we apply an aggregate function on the groups:
+
+![`GROUP BY + Aggregate function`](./pics/sql_group_by.png)
+
+The syntax and usage can be a little bit confusing at the beginning. See notes below:
+
+```sql
+-- General syntax 1/3
+-- Aggregate function AGG() needs to be in SELECT
+-- Columns in GROUP BY needs to appear in SELECT as a column
+-- Exception: Columns in AGG() do not need to be in GROUP BY:
+-- we use the cols in GROUP BY to group rows
+-- and compute the aggregate values on other cols with AGG()
+SELECT category_col, AGG(data_col)
+FROM table
+GROUP BY category_col
+-- General syntax 2/3
+-- GROUP BY needs to come direct after either FROM or WHERE
+-- WHERE filters __only__ categories from category_col
+-- If we want to filter values in other cols, we need to use HAVING
+SELECT category_col, AGG(data_col)
+FROM table
+WHERE category_col != 'A'
+GROUP BY category_col
+-- General syntax 3/3
+-- ORDER BY and LIMIT appear after GROUP BY
+-- ORDER BY needs to have the aggregate function + col
+SELECT company, SUM(sales)
+FROM finance_table
+GROUP BY company
+ORDER BY SUM(sales)
+LIMIT 5
+```
+
+#### `GROUP BY`: Examples
+
+```sql
+-- dvdrental
+
 ```
