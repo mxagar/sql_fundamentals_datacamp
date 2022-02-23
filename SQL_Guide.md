@@ -242,7 +242,7 @@ SELECT DISTINCT(rating) FROM film;
 
 ###  `COUNT`
 
-The function `COUNT` returns the number of rows/entries that match a condition.
+The function `COUNT()` returns the number of rows/entries that match a condition. Note that it offeen takes `*` as argument, because it does not matter the column in which we count the entries: any column could be possible. However, sometimes a column is selected so that it is more clear what we are doing.
 
 ```sql
 -- COUNT() is a function, it needs ()
@@ -527,8 +527,9 @@ The syntax and usage can be a little bit confusing at the beginning. See notes b
 
 Important remarks:
 
-- Columns in `GROUP BY` should appear in `SELECT` as a column.
-- Aggregate function `AGG()` needs to be in `SELECT`, but not in `GROUP BY`.
+- Columns in `SELECT` need to appear in `GROUP BY`.
+  - Exception: Aggregate function `AGG()` needs to be in `SELECT`, but not in `GROUP BY`.
+- In contrast, not all columns in `GROUP BY` need to appear in `SELECT`
 - A nice way to understand what `GROUP BY` is doing is to consider it as the word **per** in the sentence.
 - `GROUP BY` needs to come direct after either `FROM` or `WHERE`.
 - `ORDER BY` and `LIMIT` appear after `GROUP BY`.
@@ -538,10 +539,11 @@ Important remarks:
 ```sql
 -- General syntax 1/3
 -- Aggregate function AGG() needs to be in SELECT
--- Columns in GROUP BY should appear in SELECT as a column!
--- Exception: Columns in AGG() do not need to be in GROUP BY:
+-- Columns in SELECT need to appear in GROUP BY
+-- Exception: AGG() does not need to be in GROUP BY:
 -- we use the cols in GROUP BY to group rows
 -- and compute the aggregate values on other cols with AGG()
+-- In contrast, not all columns in GROUP BY need to appear in SELECT
 SELECT category_col, AGG(data_col)
 FROM table
 GROUP BY category_col
@@ -627,4 +629,179 @@ FROM payment
 GROUP BY customer_id
 ORDER BY SUM(amount) DESC
 LIMIT 5;
+```
+
+### 3.3 `HAVING`
+
+`HAVING` filters **after** an aggregation has taken place, i.e., it comes after a `GROUP BY` clause. It is a filter on the `AGG()` function. In contrast, `WHERE` is a filter that takes place before performing the grouping or aggregate computation.
+
+Remarks:
+
+- `HAVING` appears always with `GROUP BY`; so learn it as `GROUP BY HAVING`.
+- `HAVING` is not the replacement of `WHERE`; it is the `WHERE` for `AGG()` functions after `GROUP BY`.
+
+
+```sql
+-- Example:
+-- HAVING is a filter on the AGG(), i.e., after grouping has happened
+-- WHERE is a filter applied before grouping: e.g., we can remove a category before grouping
+-- HAVING appears always with GROUP BY; so learn it as GROUP BY HAVING
+SELECT company, SUM(sales)
+FROM finance_table
+WHERE company != 'Google'
+GROUP BY company
+HAVING SUM(sales) > 1000
+-- 
+-- dvdrental
+-- Customers who spent at least 100 USD?
+SELECT customer_id, SUM(amount)
+FROM payment
+GROUP BY customer_id
+HAVING SUM(amount) > 100;
+-- Stores that have at least 300 customers?
+SELECT store_id, COUNT(customer_id)
+FROM customer
+GROUP BY store_id
+HAVING COUNT(customer_id) > 300
+```
+
+#### `HAVING` Challenges / Exercises
+
+```sql
+-- dvdrental
+--
+-- What customer_ids have 40 or more payments?
+SELECT customer_id, COUNT(*)
+FROM payment
+GROUP BY customer_id
+HAVING COUNT(*) >= 40;
+-- What are the customer_ids who spent more than 100 USD with staff_id 2?
+SELECT customer_id, staff_id, SUM(amount)
+FROM payment
+WHERE staff_id = 2
+GROUP BY customer_id, staff_id
+HAVING SUM(amount) > 100;
+```
+
+## 4. `JOINS`
+
+With `JOINS` we can combine tables. This is done according to the matching (or not) of tables used in the `JOIN` clause. There are several types of joins, explained with Venn diagrams. Additionally, since things can get more complex, it is common to use aliases with `AS`.
+
+Interesting links: 
+
+- [SQL JOINS Explained with Venn Diagrams](https://blog.codinghorror.com/a-visual-explanation-of-sql-joins/)
+- [Wikipedia: SQL JOINS](https://en.wikipedia.org/wiki/Join_(SQL))
+
+### 4.1 `AS`
+
+With `AS` we can create an alias for a column or a result.
+The alias name appears in the displayed data/table.
+It is often used to make the display of the results more understandable.
+Note that `AS`is executed at the very end of a query, so we cannot use it inside the query (e.g., in filtering clauses such as `WHERE` or `HAVING`).
+
+```sql
+-- Examples (dvdrental)
+--
+SELECT COUNT(amount) AS num_transactions
+FROM payment
+-- Total spent by each customer
+SELECT customer_id, SUM(amount) AS total_spent
+FROM payment
+GROUP BY customer_id;
+-- Total spent by each customer that spent at least 100 USD
+-- Note that the alias cannot be used in the SQL clause
+SELECT customer_id, SUM(amount) AS total_spent
+FROM payment
+GROUP BY customer_id
+HAVING SUM(amount) >= 100;
+```
+
+### 4.2 `INNER JOIN`
+
+Two tables are combined taking the entries/rows that appear in both for the specified column.
+
+For instance, imagine our company organizes a congress and we want to know who from our customers attended. We have a `customer` table and a `attendee`; we perform an `INNER JOIN` with them, which is the **intersection** betwee both groups.
+
+![Inner Join](./pics/inner_join.png)
+
+![Inner Join: Example](./pics/inner_join_example.png)
+
+Some remarks:
+
+- `INNER JOIN` is symmetrical: we can swap Table A & B.
+- In case tables have columns with the same name, we can specify with `table.col`; otherwise, columns with different/unique names don't need to be specified for table.
+- PostgreSQL understands `JOIN` is `INNER JOIN`.
+
+```sql
+-- General syntax
+-- Note that INNER JOIN is symmetrical: we can interchange TableA and B
+SELECT * FROM TableA
+INNER JOIN TableB
+ON TableA.col_match = TableB.col_match;
+-- Example: Who from our customers attended our congress?
+SELECT * FROM customer
+INNER JOIN attendee
+ON customer.name = attendee.name;
+-- Same example
+-- To avoid col duplications, we can specify which cols to takes instead of *
+-- If there are cols with equal names, we use table.col
+SELECT customer_id, attendee_id, customer.name FROM customer
+INNER JOIN attendee
+ON customer.name = attendee.name;
+-- dvdrental
+--
+-- INNER JOIN customers - payments
+-- Note that in this example all payments are done by customers
+-- so it is not a very good example
+SELECT * 
+FROM payment
+INNER JOIN customer
+ON payment.customer_id = customer.customer_id;
+-- We can narrow down to the interesting cols
+SELECT payment_id, payment.customer_id, first_name
+FROM payment
+INNER JOIN customer
+ON payment.customer_id = customer.customer_id;
+```
+
+### 4.3 Full Outer Joins
+
+
+
+
+## Assessments
+### Assessment 1 (After Section 3: Fundamentals + `GROUP BY`)
+
+1. Return the customer IDs of customers who have spent at least $110 with the staff member who has an ID of 2.
+
+The answer should be customers 187 and 148.
+
+```sql
+SELECT customer_id, staff_id, SUM(amount)
+FROM payment
+WHERE staff_id = 2
+GROUP BY customer_id, staff_id
+HAVING SUM(amount) >= 110;
+```
+
+2. How many films begin with the letter J?
+
+The answer should be 20.
+
+```sql
+SELECT COUNT(*)
+FROM film
+WHERE title LIKE 'J%'
+```
+
+3. What customer has the highest customer ID number whose name starts with an 'E' and has an address ID lower than 500?
+
+The answer is Eddie Tomlin
+
+```sql
+SELECT first_name, last_name
+FROM customer
+WHERE first_name LIKE 'E%' AND address_id < 500
+ORDER BY customer_id DESC
+LIMIT 1;
 ```
