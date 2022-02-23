@@ -521,12 +521,21 @@ SELECT ROUND(AVG(replacement_cost),2) FROM film;
 
 ![`GROUP BY + Aggregate function`](./pics/sql_group_by.png)
 
-The syntax and usage can be a little bit confusing at the beginning. See notes below:
+The syntax and usage can be a little bit confusing at the beginning. See notes below in the code.
+
+Important remarks:
+
+- All columns in `GROUP BY` needs to appear in `SELECT` as a column.
+- Aggregate function `AGG()` needs to be in `SELECT`, but not in GROUP BY.
+- A nice way to understand what `GROUP BY` is doing is to consider it as the word **per** in the sentence.
+- `GROUP BY` needs to come direct after either `FROM` or `WHERE`.
+- `ORDER BY` and `LIMIT` appear after `GROUP BY`.
+- `ORDER BY` needs to have either the `AGG()` or any col in `GROUP BY`, because these are the columns display by `SELECT`.
 
 ```sql
 -- General syntax 1/3
 -- Aggregate function AGG() needs to be in SELECT
--- Columns in GROUP BY needs to appear in SELECT as a column
+-- Columns in GROUP BY needs to appear in SELECT as a column!
 -- Exception: Columns in AGG() do not need to be in GROUP BY:
 -- we use the cols in GROUP BY to group rows
 -- and compute the aggregate values on other cols with AGG()
@@ -543,7 +552,7 @@ WHERE category_col != 'A'
 GROUP BY category_col
 -- General syntax 3/3
 -- ORDER BY and LIMIT appear after GROUP BY
--- ORDER BY needs to have the aggregate function + col
+-- ORDER BY needs to have either the AGG() or any col in GROUP BY
 SELECT company, SUM(sales)
 FROM finance_table
 GROUP BY company
@@ -555,5 +564,21 @@ LIMIT 5
 
 ```sql
 -- dvdrental
+--
+-- Display unique customers; equivalent to DISTINCT
+SELECT customer_id 
+FROM payment
+GROUP BY customer_id
+ORDER BY customer_id;
+-- Who is consuming the most?
+SELECT customer_id, sum(amount)
+FROM payment
+GROUP BY customer_id
+ORDER BY SUM(amount) DESC;
+-- Multiple columns
+SELECT staff_id,customer_id, sum(amount)
+FROM payment
+GROUP BY staff_id,customer_id
+ORDER BY customer_id;
 
 ```
