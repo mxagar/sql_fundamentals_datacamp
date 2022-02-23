@@ -316,6 +316,7 @@ Notes:
 - Ordering wrt. several columns is usual when a column has duplicate entries, e.g., order by company name and sold amount.
 - We can define the order to specific columns.
 - Usually, `ORDER BY` appears at the end, but `LIMIT` can go after it.
+- `SELECT` specifies only the col display order, not the sorting order, done by `ORDER BY`
 
 ```sql
 -- General syntax
@@ -374,6 +375,7 @@ It is equivalent to using `>= X AND <= Y`.
 Notes:
 - We can combine it with `NOT`.
 - We can use it with dates if they are formatted following the ISO 8601 `YYYY-MM-DD`; however, note that the ISO format contains hours and minutes, too, and inclusivity/exclusivity issues might arise depending on when it is considered the day starts.
+- If we have a timestamp, the easiest way to convert it to a date is to use the function `DATE()`.
 
 ```sql
 -- dvdrental examples
@@ -525,17 +527,18 @@ The syntax and usage can be a little bit confusing at the beginning. See notes b
 
 Important remarks:
 
-- All columns in `GROUP BY` needs to appear in `SELECT` as a column.
-- Aggregate function `AGG()` needs to be in `SELECT`, but not in GROUP BY.
+- Columns in `GROUP BY` should appear in `SELECT` as a column.
+- Aggregate function `AGG()` needs to be in `SELECT`, but not in `GROUP BY`.
 - A nice way to understand what `GROUP BY` is doing is to consider it as the word **per** in the sentence.
 - `GROUP BY` needs to come direct after either `FROM` or `WHERE`.
 - `ORDER BY` and `LIMIT` appear after `GROUP BY`.
 - `ORDER BY` needs to have either the `AGG()` or any col in `GROUP BY`, because these are the columns display by `SELECT`.
+- `WHERE` filters **only** categories from category_col; if we want to filter values in other cols, we need to use `HAVING`.
 
 ```sql
 -- General syntax 1/3
 -- Aggregate function AGG() needs to be in SELECT
--- Columns in GROUP BY needs to appear in SELECT as a column!
+-- Columns in GROUP BY should appear in SELECT as a column!
 -- Exception: Columns in AGG() do not need to be in GROUP BY:
 -- we use the cols in GROUP BY to group rows
 -- and compute the aggregate values on other cols with AGG()
@@ -576,9 +579,52 @@ FROM payment
 GROUP BY customer_id
 ORDER BY SUM(amount) DESC;
 -- Multiple columns
-SELECT staff_id,customer_id, sum(amount)
+-- Ordered according to first column first, rest afterwards
+-- SELECT specifies only the col display order, not the sorting order, done by ORDER BY
+SELECT staff_id, customer_id, SUM(amount)
 FROM payment
 GROUP BY staff_id,customer_id
 ORDER BY customer_id;
+-- Two ORDER BY
+SELECT staff_id, customer_id, SUM(amount)
+FROM payment
+GROUP BY staff_id,customer_id
+ORDER BY customer_id, staff_id;
+-- ORDER BY with AGG()
+SELECT staff_id, customer_id, SUM(amount)
+FROM payment
+GROUP BY staff_id,customer_id
+ORDER BY SUM(amount);
+-- List of amounts earned per day from largest amount to smallest
+-- Timestamps need to be converted to dates (days: YYYY-MM-DD) with DATE(timestamp)
+SELECT DATE(payment_date), SUM(amount)
+FROM payment
+GROUP BY DATE(payment_date)
+ORDER BY SUM(amount) DESC;
+```
 
+#### `GROUP BY`: Challenges / Exercises
+
+```sql
+-- dvdrental
+--
+-- Challenge 1:
+-- How many payments did each staff member handle?
+SELECT staff_id, COUNT(*)
+FROM payment
+GROUP BY staff_id
+ORDER BY COUNT(*);
+-- Challenge 2:
+-- What is the average replacement cost per MPAA rating?
+SELECT rating, ROUND(AVG(replacement_cost),2)
+FROM film
+GROUP BY rating
+ORDER BY ROUND(AVG(replacement_cost),2);
+-- Challenge 3:
+-- What are the customers ids of the top 5 customers?
+SELECT customer_id, SUM(amount)
+FROM payment
+GROUP BY customer_id
+ORDER BY SUM(amount) DESC
+LIMIT 5;
 ```
