@@ -28,7 +28,20 @@ The [The Complete SQL Bootcamp](https://www.udemy.com/course/the-complete-sql-bo
    - `LIKE` and `ILIKE`
    - Challenges / Exercises
 3. `GROUP BY` Statements
+   - 3.1 Aggregate Functions
+   - 3.2 `GROUP BY`
+     - `GROUP BY`: Examples
+     - `GROUP BY`: Challenges / Exercises
+   - 3.3 `HAVING`
+     - `HAVING` Challenges / Exercises
 4. `JOINS`
+   - 4.1 `AS`
+   - 4.2 `INNER JOIN`
+   - 4.3 `FULL OUTER JOIN` + `WHERE`
+   - 4.4 `LEFT (OUTER) JOIN` + `WHERE`
+   - 4.5 `RIGHT (OUTER) JOIN` + `WHERE`
+   - 4.6 `UNION`
+   - 4.7 Challenges: Very Important Examples
 5. Advanced SQL Commands
 6. Creating Databases and Tables
 7. Conditional Expressions and Procedures
@@ -766,7 +779,7 @@ INNER JOIN customer
 ON payment.customer_id = customer.customer_id;
 ```
 
-### 4.3 `FULL OUTER JOIN`
+### 4.3 `FULL OUTER JOIN` + `WHERE`
 
 Whereas the `INNER JOIN` is the default intersection operation, outer joins deal with entries that appear only in one table -- these are more complex.
 
@@ -825,7 +838,7 @@ WHERE customer.customer_id IS null
 OR payment.payment_id IS null;
 ```
 
-### 4.4 `LEFT (OUTER) JOIN`
+### 4.4 `LEFT (OUTER) JOIN` + `WHERE`
 
 Records that are in the left table; if there is no match with the right table, the results are null. Note that: 
 
@@ -887,7 +900,7 @@ ON inventory.film_id = film.film_id
 WHERE inventory.film_id IS null
 ```
 
-### 4.5 `RIGHT (OUTER) JOIN`
+### 4.5 `RIGHT (OUTER) JOIN` + `WHERE`
 
 The `RIGHT (OUTER) JOIN` is equivalent to the `LEFT`, but on the right table. Again, the order matters: the left table is the one after `FROM`, the right is the one after `RIGHT JOIN`. Actually, we can make a `RIGHT JOIN` out of a `LEFT JOIN` just by switching tables in the SQL query.
 
@@ -950,6 +963,9 @@ INNER JOIN film
 ON film_actor.film_id = film.film_id
 WHERE first_name = 'Nick' AND last_name = 'Wahlberg';
 ```
+
+## 5. Advanced SQL Commands
+
 
 ## Assessments
 ### Assessment 1 (After Section 3: Fundamentals + `GROUP BY`)
