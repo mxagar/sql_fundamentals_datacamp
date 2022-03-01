@@ -692,6 +692,8 @@ Interesting links:
 - [SQL JOINS Explained with Venn Diagrams](https://blog.codinghorror.com/a-visual-explanation-of-sql-joins/)
 - [Wikipedia: SQL JOINS](https://en.wikipedia.org/wiki/Join_(SQL))
 
+Note that joins can be concatenated! See the Challenges (Section 4.7).
+
 ### 4.1 `AS`
 
 With `AS` we can create an alias for a column or a result.
@@ -720,7 +722,7 @@ HAVING SUM(amount) >= 100;
 
 Two tables are combined taking the entries/rows that appear in both for the specified column.
 
-For instance, imagine our company organizes a congress and we want to know who from our customers attended. We have a `customer` table and a `attendee`; we perform an `INNER JOIN` with them, which is the **intersection** betwee both groups.
+For instance, imagine our company organizes a congress and we want to know who from our customers attended. We have a `customer` table and a `attendee`; we perform an `INNER JOIN` with them, which is the **intersection** between both groups.
 
 ![Inner Join](./pics/inner_join.png)
 
@@ -764,10 +766,190 @@ INNER JOIN customer
 ON payment.customer_id = customer.customer_id;
 ```
 
-### 4.3 Full Outer Joins
+### 4.3 `FULL OUTER JOIN`
 
+Whereas the `INNER JOIN` is the default intersection operation, outer joins deal with entries that appear only in one table -- these are more complex.
 
+The simplest outer join is the `FULL OUTER JOIN`: it takes all entries in both tables, independently whether they appear in both or not. Note that:
 
+- Entries in both tables appear only once, not twice
+- Entries that are only in one table have NULL values in the selected columns of the other table
+- It is symmetric: we can swap tables
+
+![Full Outer Join](./pics/full_outer_join.png)
+
+![Full Outer Join Example](./pics/full_outer_join_example.png)
+
+```sql
+-- General Syntax
+SELECT * FROM TableA
+FULL OUTER JOIN TableB
+ON TableA.col_match = Table_B.col_match
+-- Example
+SELECT * FROM Registrations
+FULL OUTER JOIN Logins
+ON Registrations.name = Logins.name
+```
+
+`FULL OUTER JOIN` with `WHERE` can get rows unique to either table = rows not found in both tables. That is the opposite of an `INNER JOIN`! For that, we simply add that a column value (usually the id) must be null.
+
+**IMPORTANT NOTE**: It is the first time I see the use of `IS` instead of `=` or `LIKE`. Note that `IS` is used together with `null`: `IS null`.
+
+![Full Outer Join WHERE](./pics/full_outer_join_where.png)
+
+![Full Outer Join WHERE Example](./pics/full_outer_join_where_example.png)
+
+```sql
+-- General Syntax: Same as before, but with an addition:
+-- we specify that a column value (usually the id) must be null
+SELECT * FROM TableA
+FULL OUTER JOIN TableB
+ON TableA.col_match = Table_B.col_match
+WHERE TableA.id is null or TableB.id is null
+-- Example
+SELECT * FROM Registrations
+FULL OUTER JOIN Logins
+ON Registrations.name = Logins.name
+WHERE TableA.reg_id is null or TableB.log_id is null
+--
+-- dvdrental
+-- Are there customers who have NOT done a payment
+-- or payments of people who are not registered as customer?
+-- That would check a privacy guideline...
+-- There are no such entries: Check
+SELECT *
+FROM customer
+FULL OUTER JOIN payment
+ON customer.customer_id = payment.customer_id
+WHERE customer.customer_id IS null
+OR payment.payment_id IS null;
+```
+
+### 4.4 `LEFT (OUTER) JOIN`
+
+Records that are in the left table; if there is no match with the right table, the results are null. Note that: 
+
+- Now, the query is not symmetric: the order matters: The left table is the first one, after `FROM`!
+- `LEFT JOIN` is equivalent to `LEFT OUTER JOIN`.
+- The row from the left table that don't have a match in the right table are taken, but null value is set for their values in the columns of the right table, is any are selected.
+
+![Left Outer Join](./pics/left_outer_join.png)
+
+![Left Outer Join Example](./pics/left_outer_join_example.png)
+
+```sql
+-- General Syntax
+SELECT * FROM TableA
+LEFT OUTER JOIN TableB
+ON TableA.col_match = Table_B.col_match
+-- Example
+SELECT * FROM Registrations
+LEFT OUTER JOIN Logins
+ON Registrations.name = Logins.name
+```
+
+`LEFT (OUTER) JOIN` with `WHERE` can yield the entries that only are present in the left table, i.e., all entries that are not in the right table. We get rows unique to the left table.
+
+![Left Outer Join WHERE](./pics/left_outer_join_where.png)
+
+![Left Outer Join WHERE Example](./pics/left_outer_join_where_example.png)
+
+```sql
+-- General Syntax
+-- Left table: TableA; Right table: TableB
+-- WHERE applied on right table
+SELECT * FROM TableA
+LEFT OUTER JOIN TableB
+ON TableA.col_match = Table_B.col_match
+WHERE TableB.id IS null
+-- Example
+SELECT * FROM Registrations
+LEFT OUTER JOIN Logins
+ON Registrations.name = Logins.name
+WHERE Logins.log_id IS null
+--
+-- dvdrental
+-- Example with films and inventory:
+-- We can have multiple copies of a film
+-- and a film only in one store, not the other(s).
+-- Which are the inventory ids of all films?
+-- Recall we don't need to specify the table of unique cols
+SELECT film.film_id, title, inventory_id
+FROM film
+LEFT JOIN inventory
+ON inventory.film_id = film.film_id;
+-- Which films are not in the inventory?
+-- We have infor on the films, but we don't have them in the inventory
+SELECT film.film_id, title, inventory_id
+FROM film
+LEFT JOIN inventory
+ON inventory.film_id = film.film_id
+WHERE inventory.film_id IS null
+```
+
+### 4.5 `RIGHT (OUTER) JOIN`
+
+The `RIGHT (OUTER) JOIN` is equivalent to the `LEFT`, but on the right table. Again, the order matters: the left table is the one after `FROM`, the right is the one after `RIGHT JOIN`. Actually, we can make a `RIGHT JOIN` out of a `LEFT JOIN` just by switching tables in the SQL query.
+
+As with `LEFT JOIN`, if we add `WHERE` we can get rows that are unique/exclusive to the right table
+
+```sql
+-- General Syntax
+-- Left table: TableA; Right table: TableB
+SELECT * FROM TableA
+RIGHT OUTER JOIN TableB
+ON TableA.col_match = Table_B.col_match
+-- WHERE qualifier: get rows unique/exclusive to the right table
+-- WHERE applied on left table
+SELECT * FROM TableA
+RIGHT JOIN TableB
+ON TableA.col_match = Table_B.col_match
+WHERE TableA.id IS null
+```
+
+### 4.6 `UNION`
+
+The result of two SQL queries are stacked or concatenated one after the other.
+Note that the two results should match up, so they are often used with tables that are equivalent; e.g., sales of different periods. We can add `ORDER BY` if desired.
+
+```sql
+-- General Syntax
+SELECT column_name(s) FROM TableA
+UNION
+SELECT column_name(s) FROM TableB;
+-- Example
+SELECT * FROM Sales_2021_Q1
+UNION
+SELECT * FROM Sales_2021_Q2;
+ORDER BY name;
+```
+
+### 4.7 Challenges: Very Important Examples
+
+```sql
+-- dvdrental
+--
+-- Emails of customers who live in California? (district column is used for states)
+SELECT customer_id, district, email
+FROM customer
+INNER JOIN address
+ON customer.address_id = address.address_id
+WHERE district LIKE 'California';
+-- Movies in which Nick Wahlberg has participated?
+-- Involved Tables: film, actor, film_actor
+-- We need to do two JOINs in a row:
+-- We do the first one, and on the table we get, the next one
+-- Tips:
+-- 1. In each step, run the query
+-- 2. We can start with `SELECT *` and the reduce to the desired columns
+SELECT title, first_name, last_name
+FROM actor
+INNER JOIN film_actor
+ON actor.actor_id = film_actor.actor_id
+INNER JOIN film
+ON film_actor.film_id = film.film_id
+WHERE first_name = 'Nick' AND last_name = 'Wahlberg';
+```
 
 ## Assessments
 ### Assessment 1 (After Section 3: Fundamentals + `GROUP BY`)
