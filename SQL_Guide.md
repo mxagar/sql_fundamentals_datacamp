@@ -966,6 +966,90 @@ WHERE first_name = 'Nick' AND last_name = 'Wahlberg';
 
 ## 5. Advanced SQL Commands
 
+### 5.1 Obtaining Time Information
+
+Time information can be encoded as
+- TIME: only time
+- DATE: only date
+- TIMESTAMP: date + time
+- TIMESTAMPTZ: date + time + time zone
+
+Some functions and operations which are useful when creating tables (not so much for queries):
+- `TIMEZONE`
+- `NOW`
+- `TIMEOFDAY`
+- `CURRENT_TIME`
+- `CURRENT_DATE`
+
+```sql
+-- Show all environment settings (344 in my case)
+SHOW ALL;
+-- Show time zone (one of those 344 env settings)
+SHOW TIMEZONE;
+-- Get current TIMESTAMP
+SELECT NOW();
+-- Same as before, but get it as a string
+SELECT TIMEOFDAY();
+-- Get current time/date
+SELECT CURRENT_TIME;
+SELECT CURRENT_DATE;
+```
+
+### 5.2 Extracting Time Information
+
+Some helpful functions to process date data:
+- `EXTRACT()` can extract sub-components for a date value, such as `YEAR`, `MONTH`, `DAY` or `WEEK`.
+- `AGE()`: it gets current age given a timestamp
+- `TO_CHAR()`: timestamp formatting; not exclusive for timestamps, though. Look at the [documentation](https://www.postgresql.org/docs/14/functions-formatting.html) for its usage, specially the patterns we have available.
+
+```sql
+-- Given a timestamp column, get the year / month / quarter
+-- and show it as a new col pay_year / pay_month / pay_quarter
+SELECT EXTRACT(YEAR FROM payment_date) AS pay_year
+FROM payment;
+SELECT EXTRACT(MONTH FROM payment_date) AS pay_month
+FROM payment;
+SELECT EXTRACT(QUARTER FROM payment_date) AS pay_quarter
+FROM payment;
+-- How old are payment timestamps?
+SELECT AGE(payment_date)
+FROM payment;
+-- Formatting the timestamp/date
+-- Have a look at the patterns; we can combine the patterns with additional symbols (e.g., '-', '/'):
+-- https://www.postgresql.org/docs/14/functions-formatting.html
+SELECT TO_CHAR(payment_date, 'MONTH YYYY')
+FROM payment;
+SELECT TO_CHAR(payment_date, 'MONTH/YYYY')
+FROM payment;
+SELECT TO_CHAR(payment_date, 'MM/dd/YYYY')
+FROM payment;
+SELECT TO_CHAR(payment_date, 'mon-dd-YYYY')
+FROM payment;
+```
+
+Challenge examples:
+
+```sql
+-- Month of the payment
+SELECT EXTRACT(MONTH FROM payment_date)
+FROM payment;
+-- Month of the payment as a string
+-- Note that how we write the pattern matters:
+-- 'month': january, ...
+-- 'Month': January, ...
+-- 'MONTH': JANUARY, ...
+SELECT TO_CHAR(payment_date, 'Month')
+FROM payment;
+-- How many payments occurred on Monday?
+-- DOW: Day of Week; Sunday has index 0
+SELECT COUNT(*) 
+FROM payment
+WHERE EXTRACT(DOW FROM payment_date) = 1;
+```
+
+### 5.3 Mathematical Functions
+
+
 
 ## Assessments
 ### Assessment 1 (After Section 3: Fundamentals + `GROUP BY`)
