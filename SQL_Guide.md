@@ -1003,6 +1003,8 @@ Some helpful functions to process date data:
 - `TO_CHAR()`: timestamp formatting; not exclusive for timestamps, though. Look at the [documentation](https://www.postgresql.org/docs/14/functions-formatting.html) for its usage, specially the patterns we have available.
 
 ```sql
+-- dvdrental
+--
 -- Given a timestamp column, get the year / month / quarter
 -- and show it as a new col pay_year / pay_month / pay_quarter
 SELECT EXTRACT(YEAR FROM payment_date) AS pay_year
@@ -1030,6 +1032,8 @@ FROM payment;
 Challenge examples:
 
 ```sql
+-- dvdrental
+--
 -- Month of the payment
 SELECT EXTRACT(MONTH FROM payment_date)
 FROM payment;
@@ -1049,6 +1053,164 @@ WHERE EXTRACT(DOW FROM payment_date) = 1;
 
 ### 5.3 Mathematical Functions
 
+We have available many [Mathematical Functions and Operators](https://www.postgresql.org/docs/14/functions-math.html): `abs()`, `ceil()`, `exp()`, `ln()`, `power()`, `radians()`, `random()`, `sin()`, `sinh()`...
+
+Some examples of usage:
+
+```sql
+-- dvdrental
+--
+-- Percentage of rental rate vs. replacement cost?
+SELECT ROUND(rental_rate/replacement_cost,2)*100 AS percent_cost
+FROM film;
+-- Create deposit variable as 10% of the replaccement cost
+SELECT 0.1*replacement_cost as deposit
+FROM film;
+```
+
+### 5.4 String Functions and Operations
+
+As with the mathematical functions, we have many [String Functions and Operators](https://www.postgresql.org/docs/14/functions-string.html): string concatenation, string length, search substrings, regular expressions / pattern matching, etc.
+
+Some examples:
+
+```sql
+-- dvdrental
+--
+-- Length of first name?
+SELECT LENGTH(first_name)
+FROM customer;
+-- Concatenate first+last name; we add a white space between
+SELECT first_name || ' ' || last_name AS full_name
+FROM customer;
+-- Upper case
+SELECT first_name || ' ' || UPPER(last_name) AS full_name
+FROM customer;
+-- Create an email following a pattern: John Smith -> jsmith@gmail.com
+-- LEFT: take n characters starting from the left
+-- LOWER: convert to lower case
+SELECT LOWER(LEFT(first_name,1)) || LOWER(last_name) || '@gmail.com'
+AS custom_email
+FROM customer;
+```
+
+### 5.5 Sub-Queries
+
+With a sub-query we can perform queries on the results of a previous query!
+The syntax is straightforward: we need to perform two `SELECT` queries.
+Some notes:
+- The sub-query is inside `()`: `SELECT ... (SELECT ...)`.
+- We often first write the sub-query, insert it in `()` and then write the preceding query.
+- The sub-query returns value(s) that are used by the main/preceeding query
+- Three types of sub-queries:
+  1. If the sub-query returns one value (e.g., with `AVG()`), we can use logical operators: `>, <, ...`
+  2. If the sub-query returns several vaues, we need to use `IN` on a key column: that is like an inner join
+  3. Sub-queries can be used with the `EXISTS()` function, which receives a `SELECT` sub-query as argument. That is like using `IN` or an inner join, but we don't need to specify the key column.
+- As we start performing sub-queries, we need to have clearly in mind the complete database and its relationships; sub-queries are like piping results from query to query.
+- Ordering with `ORDER BY` is done **after** the sub-query!
+
+Generic examples: 
+
+```sql
+-- Example 1: Sub-query returns one value
+-- Which students have a score above the average?
+-- The sub-query in () is executed and its value is used
+-- We can use logical operators if the sub-query returns a value
+SELECT student, grade
+FROM test_scores
+WHERE grade > (SELECT AVG(grade) FROM test_scores)
+-- Example 2: Sub-query returns several values
+-- If the sub-query returns several values,
+-- we need to use IN, similarly to a JOIN
+SELECT student, grade
+FROM test_scores
+WHERE student IN
+(SELECT student FROM honor_roll_table)
+-- Example 3: EXISTS()
+SELECT column_name
+FROM table_name
+WHERE EXISTS
+(SELECT column_name FROM
+table_name WHERE condition);
+```
+
+Examples with `dvdrental`:
+
+```sql
+-- dvdrental
+-- 
+-- Example 1: Sub-query returns one value
+-- All movies that have a rental rate above the average?
+SELECT title, rental_rate
+FROM film
+WHERE rental_rate >
+(SELECT AVG(rental_rate) FROM film)
+-- Example 2: Sub-query returns several values
+-- All film titles that have been returned between two dates?
+-- We need to perform an inner join between inventory and rental to get the film ids
+-- and then use the film ids to get the titles!
+-- ORDER BY comes after the sub-query
+SELECT title FROM film
+WHERE film_id IN
+(SELECT inventory.film_id
+FROM rental
+INNER JOIN inventory ON inventory.inventory_id = rental.inventory_id
+WHERE return_date BETWEEN '2005-05-29' AND '2005-05-30')
+ORDER BY title
+-- Example 3: EXISTS()
+-- All customers with a payment above 11 USD?
+-- Note that this is equivalent to IN / INNER JOIN
+-- but no key columns are specified, just the existence of rows is checked
+SELECT first_name, last_name
+FROM customer AS c
+WHERE EXISTS
+(SELECT * FROM payment as p
+WHERE p.customer_id = c.customer_id
+AND amount > 11)
+-- Same as before, but customers that have NOT a payment above 11 USD
+SELECT first_name, last_name
+FROM customer AS c
+WHERE NOT EXISTS
+(SELECT * FROM payment as p
+WHERE p.customer_id = c.customer_id
+AND amount > 11)
+```
+
+### 5.6 Self-Joins
+
+A self-join is a query in which a table is joined to itself. There is no special keyword for them, but the table needs to be aliased into two tables to avoid confusions. For instance, it can be used to get rows that have different columns with matching values.
+
+```sql
+-- Generic example: not we create two aliases of the same table
+SELECT tableA.col, tableB.col
+FROM table AS tableA
+INNER JOIN table as tableB
+tableA.some_col = tableB.other_col
+```
+
+Example: we have a table `employees` in which we register for each employee id, to whom (employee id) they send a report for reading. We want to match names of report writers and readers.
+
+![Self-Join: Example](./pics/self_join_example.png)
+
+```sql
+SELECT tableA.name, tableB.name AS recipient
+FROM employees AS tableA
+INNER JOIN employees as tableB
+tableA.emp_id = tableB.report_id
+```
+
+Example with `dvdrental`:
+
+```sql
+-- dvdrental
+--
+-- All the film pairs with the same length/duration?
+SELECT f1.title, f2.title, f1.length
+FROM film AS f1
+INNER JOIN film as f2
+ON f1.film_id != f2.film_id
+AND f1.length = f2.length
+```
 
 
 ## Assessments
@@ -1087,3 +1249,27 @@ WHERE first_name LIKE 'E%' AND address_id < 500
 ORDER BY customer_id DESC
 LIMIT 1;
 ```
+
+### Assessment 2 (After Section 5: Joins & Advanced Commands)
+
+A new database is provided, which needs to be restored as explained in Section 1.1:
+
+`./data/exercises.tar`
+
+After restoring it, we right-click on the left menu column of `pgAdmin` and select `Query Tool`.
+Note that the database has 2 schemas; we work with the schema `cd`, which has 3 tables:
+
+- `bookings`
+- `facilities`
+- `members`
+
+The database contains information of a sports resort that has facilities (e.g., tennis courts) booked by members.
+
+To select between schemas, every table in `cd` needs to be preceeded with `cd.`:
+
+```sql
+SELECT * FROM cd.bookings;
+SELECT * FROM cd.facilities;
+SELECT * FROM cd.members;
+```
+
