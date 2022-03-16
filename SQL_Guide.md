@@ -1273,3 +1273,70 @@ SELECT * FROM cd.facilities;
 SELECT * FROM cd.members;
 ```
 
+Exercises:
+
+```sql
+-- 1. Retrieve all the information from the cd.facilities table
+SELECT * FROM cd.facilities;
+-- 2. Retrieve a list of only facility names and costs
+SELECT name, membercost FROM cd.facilities;
+-- 3. Facilities that charge a fee to members
+SELECT * FROM cd.facilities
+WHERE membercost > 0
+-- 4. Facilities that charge a fee less than 1/50th of the monthly maintenance cost to members
+SELECT facid, name, membercost, monthlymaintenance FROM cd.facilities
+WHERE membercost < monthlymaintenance/50
+-- 5. Facilities with the word 'Tennis' in their name
+SELECT * FROM cd.facilities
+WHERE name LIKE '%Tennis%'
+-- 6. Details of facilities with ID1 and 5
+SELECT * FROM cd.facilities
+WHERE facid IN (1, 5)
+-- 7. Members who joined after the start of September 2012
+SELECT memid, surname, firstname, joindate FROM cd.members
+WHERE joindate > '2012-09-01'
+-- 8. Ordered list of the first 10 surnames in the members table
+SELECT DISTINCT surname FROM cd.members
+ORDER BY surname ASC
+LIMIT 10
+-- 9. Signup date of your last member
+SELECT joindate FROM cd.members
+ORDER BY joindate DESC
+LIMIT 1
+--
+SELECT MAX(joindate)
+FROM cd.members
+-- 10. Number of facilities that have a cost to guests of 10 or more
+SELECT COUNT(*)
+FROM cd.facilities
+WHERE guestcost >= 10
+-- 11. Number of slots booked per facility in the month of September 2012
+SELECT facid, SUM(slots)
+FROM cd.bookings
+WHERE EXTRACT(MONTH FROM starttime) = 9
+AND EXTRACT(YEAR FROM starttime) = 2012
+GROUP BY facid
+-- 12. Facilities with more than 1000 slots booked
+SELECT facid, SUM(slots) AS total_slots
+FROM cd.bookings
+GROUP BY facid
+HAVING SUM(slots) > 1000
+ORDER BY facid
+-- 13. Start times for bookings for tennis courts, for the date '2012-09-21'
+SELECT starttime, name
+FROM cd.bookings
+INNER JOIN cd.facilities
+ON cd.bookings.facid = cd.facilities.facid
+WHERE EXTRACT(YEAR FROM starttime) = 2012
+AND EXTRACT(MONTH FROM starttime) = 9
+AND EXTRACT(DAY FROM starttime) = 21
+AND name LIKE '%Tennis Court%'
+ORDER BY starttimes
+-- 14. Start times for bookings by members named 'David Farrell'
+SELECT bookid, starttime, firstname || ' ' || surname
+FROM cd.bookings
+INNER JOIN cd.members
+ON cd.bookings.memid = cd.members.memid
+WHERE firstname LIKE 'David'
+AND surname LIKE 'Farrell'
+```
