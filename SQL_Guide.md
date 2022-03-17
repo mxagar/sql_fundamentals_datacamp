@@ -1340,3 +1340,180 @@ ON cd.bookings.memid = cd.members.memid
 WHERE firstname LIKE 'David'
 AND surname LIKE 'Farrell'
 ```
+
+## 6. Creating Databases and Tables
+
+### 6.1 Data Types
+
+When creating a column in a table, we need to specify the data types. We should have a look at the documentation to check the limitations of each type:
+
+[Data Types in PostgreSQL](https://www.postgresql.org/docs/current/datatype.html)
+
+Common data types are:
+
+- Boolean: True / False
+- Character: char, varchar, text
+- Numeric: integer, float
+- Temporal/date: date, time, timestamp, interval
+
+Other data types:
+
+- SERIAL: sequence of integers, used for the table keys; automatically generated as we enter rows
+- UUID: Universally Unique Identifier
+- Array: arrays of strings, numbers, etc.
+- JSON and XML
+- Hstore key-value pair
+- Special types: network address, geometric data (points, lines, circles, etc.).
+- Monetary types
+- Binary types
+- Composite types
+- Range types
+- ...
+
+Always think carefully and check the documentation; for instance, a phone number should be stored as a text type, not as a number, because we might have cases like "07.." or "0-711-...".
+
+### 6.2 Primary and Foreign Keys
+
+A **primary key** is a column or a group of columns used to identify a row uniquely in a table: `customer_id`, `booking_id`, etc. When visualizing tables, the columns of primary keys are marked with `[PK]`. These keys
+
+- must have a value different for each row, 
+- the value must not be not `NULL`,
+- are typically integers,
+- are used to carry our `JOINS`,
+- are not compulsory, i.e., a table doesn't need to have any primary key!
+
+A **foreign key** is a field/column or a group of fields/columns that uniquely identifies a row in another table. A table that contains a foreign key is *referencing table* or *child table*; the origin table is called *reference or parent table*.
+
+Example in `dvdrental:payment`:
+
+- Primary key: `payment_id`
+- Foreign keys: `customer_id`, `staff_id`, `rental_id`
+
+![Example of primary and foreign keys in dvdrental:payment](./pics/payment_table_keys.png)
+
+Whereas the primary keys are clearly marked, if we're unsure, we can check the foreign keys in `pgAdmin` as follows:
+
+- Expand: database > Schemas > public > Tables > Constraints
+- If we right-click on a constraint: Properties > Columns
+
+### 6.3 Constraints
+
+Constraints are the rules enforced on data columns to prevent invalid data from being generated/inserted. We have two types of constraints, depending on to what they apply: (1) Column constraints and (2) Table constraints.
+
+Common column constraints:
+
+- `NOT NULL`: cannot have a `NULL` value
+- `UNIQUE`: all values in the rows of a column are different
+- `PRIMARY KEY`
+- `FOREING KEY`: when using it, we need to specify the relationship to the other table.
+- `CHECK`: ensure that the values of a column satisfy certain conditions.
+- `EXCLUSION`: it ensures that if any two rows are compared on the specified column using the specified operator, not all of these comparisons will return TRUE (?).
+
+Common table constrains:
+
+- `CHECK (condition)`: check condition when inserting or updating data
+- `REFERENCES`: constrain the value stored in the column that must exist in a column in another table
+- `UNIQUE (column list)`: values in the columns need to be unique
+- `PRIMARY KEY (column list)`: primary key that consists of multiple columns
+
+### 6.4 `CREATE` Table
+
+With `CREATE`, we can create tables.
+
+```sql
+-- General syntax
+-- Note the commas
+-- The minimum elements we need are the columns
+CREATE TABLE table_name (
+    column_name column_type column_constraint,
+    column_name column_type column_constraint,
+    table_constraint table_constraint
+) INHERITS existing_table_name;
+-- Example 1
+-- Note that the SERIAL type is used for sequences of integers,
+-- typical for primary keys; 
+-- it is an object that automatically generates integers as we enter rows!
+-- So SERIAL takes care of the id values
+-- Look at the docs for options: smallserial (2 bytes), serial (4), bigserial (8) 
+CREATE TABLE players (
+    player_id SERIAL PRIMARY KEY,
+    age SMALLINT NOT NULL
+);
+```
+
+However, we usually first need to **create a new database**:
+
+- We close the query pannels in `pgAdmin`; we don't need to save anything.
+- Left panel: right-click on "PostgreSQL 14" > Create > Database... (note: 14 is the current version of the server I'm using / connected to)
+- Give it a name, e.g.: `learning_db`
+- It appears hanging on left pannel below PostgreSQL 14 > Databases
+- Right-click on `learning_db`: Refresh; Query Tool
+
+Now, we have a query tool to our newly created database and we can start creating tables.
+
+```sql
+-- Examples with learning_db
+-- We execute the following statements to create tables
+-- 
+-- Table 1: account
+-- VARCHAR(number): string of specified length
+-- Column constraint list is without commas
+-- In this example we do not consider encrypting the pw.
+-- Note that if we execute twice the command, we'll get an error.
+CREATE TABLE account (
+	user_id SERIAL PRIMARY KEY,
+	username VARCHAR(50) UNIQUE NOT NULL,
+	password VARCHAR(50) NOT NULL,
+	email VARCHAR(250) UNIQUE NOT NULL,
+	created_on TIMESTAMP NOT NULL,
+	last_login TIMESTAMP
+)
+-- Table 2: job
+CREATE TABLE job (
+    job_id SERIAL PRIMARY KEY,
+    job_name VARCHAR(200) UNIQUE NOT NULL
+);
+-- Table 3: account-job relationship table:
+-- User accounts related to each job.
+-- The syntax is:
+-- key_from_other_table INTEGER REFERENCES other_table(key_from_other_table)
+-- Note that we don't use SERIAL anymore, because we need to control the key value!
+-- I think the left key can have any name
+CREATE TABLE account_job (
+    user_id INTEGER REFERENCES account(user_id),
+    job_id INTEGER REFERENCES account(user_id),
+	hired_date TIMESTAMP
+);
+```
+
+### 6.5 `INSERT` Rows into a Table
+
+```sql
+-- General syntax
+-- 
+-- Case 1: new values
+-- Insert in columns 1 & 2 of table_name
+-- these three value pairs, each to a column.
+-- Everything needs to match: type, size, constraints, etc.
+-- Note: SERIAL columns don't need to be provided.
+INSERT INTO table_name (column1, column2)
+VALUES
+    (value1,value2),
+    (value1,value2),
+    (value1,value2);
+-- Case 2: values from another table
+-- Insert in columns 1 & 2 of table_name
+-- the output of the SELECT statement.
+-- Everything needs to match: type, size, constraints, etc.
+-- Note: SERIAL columns don't need to be provided.
+INSERT INTO table_name (column1, column2)
+SELECT columnA, columnB
+FROM another_table
+WHERE condition;
+```
+
+In the following, some examples with the `learning_db` we created:
+
+```sql
+
+```
