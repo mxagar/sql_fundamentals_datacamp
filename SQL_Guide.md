@@ -43,9 +43,29 @@ The [The Complete SQL Bootcamp](https://www.udemy.com/course/the-complete-sql-bo
    - 4.6 `UNION`
    - 4.7 Challenges: Very Important Examples
 5. Advanced SQL Commands
+   - 5.1 Obtaining Time Information
+   - 5.2 Extracting Time Information
+   - 5.3 Mathematical Functions
+   - 5.4 String Functions and Operations
+   - 5.5 Sub-Queries
+   - 5.6 Self-Joins
 6. Creating Databases and Tables
+   - 6.1 Data Types
+   - 6.2 Primary and Foreign Keys
+   - 6.3 Constraints
+   - 6.4 `CREATE` Table
+   - 6.5 `INSERT` Rows into a Table
+   - 6.6 `UPDATE` the Rows of a Table
+   - 6.7 `DELETE` to Remove Rows from a Table
+   - 6.8 `ALTER` a Table
+   - 6.9 `DROP TABLE`
+   - 6.10 `CHECK` Constraints
 7. Conditional Expressions and Procedures
 8. PostGreSQL with Python
+9. Assessments
+   - Assessment 1
+   - Assessment 2
+   - Assessment 3
 
 The current file is a **summary/guide of my notes and SQL in general**.
 
@@ -109,7 +129,7 @@ Open pgAdmin
     We can connect to engine servers on the left panel
         introduce postgres pw
 
-Restore Example Database
+Create and Restore Example Database
     Udemy course material: example database file that should not be uncompressed:
     `./data/dvdrental.tar`
 
@@ -117,6 +137,11 @@ Restore Example Database
     Select PostgreSQL on left panel > Databases
         Right click: create: dvdrental
             New database appears on left panel
+            Now, we can populate that database
+                - restoring it from a file
+                - inserting tables and rows manually
+                - importing CSVs
+                - ...
         Right click on dvdrental DB > Restore...
             Path to dvdrental.tar
             Options/data-object
@@ -1211,136 +1236,6 @@ INNER JOIN film as f2
 ON f1.film_id != f2.film_id
 AND f1.length = f2.length
 ```
-
-
-## Assessments
-### Assessment 1 (After Section 3: Fundamentals + `GROUP BY`)
-
-1. Return the customer IDs of customers who have spent at least $110 with the staff member who has an ID of 2.
-
-The answer should be customers 187 and 148.
-
-```sql
-SELECT customer_id, staff_id, SUM(amount)
-FROM payment
-WHERE staff_id = 2
-GROUP BY customer_id, staff_id
-HAVING SUM(amount) >= 110;
-```
-
-2. How many films begin with the letter J?
-
-The answer should be 20.
-
-```sql
-SELECT COUNT(*)
-FROM film
-WHERE title LIKE 'J%'
-```
-
-3. What customer has the highest customer ID number whose name starts with an 'E' and has an address ID lower than 500?
-
-The answer is Eddie Tomlin
-
-```sql
-SELECT first_name, last_name
-FROM customer
-WHERE first_name LIKE 'E%' AND address_id < 500
-ORDER BY customer_id DESC
-LIMIT 1;
-```
-
-### Assessment 2 (After Section 5: Joins & Advanced Commands)
-
-A new database is provided, which needs to be restored as explained in Section 1.1:
-
-`./data/exercises.tar`
-
-After restoring it, we right-click on the left menu column of `pgAdmin` and select `Query Tool`.
-Note that the database has 2 schemas; we work with the schema `cd`, which has 3 tables:
-
-- `bookings`
-- `facilities`
-- `members`
-
-The database contains information of a sports resort that has facilities (e.g., tennis courts) booked by members.
-
-To select between schemas, every table in `cd` needs to be preceeded with `cd.`:
-
-```sql
-SELECT * FROM cd.bookings;
-SELECT * FROM cd.facilities;
-SELECT * FROM cd.members;
-```
-
-Exercises:
-
-```sql
--- 1. Retrieve all the information from the cd.facilities table
-SELECT * FROM cd.facilities;
--- 2. Retrieve a list of only facility names and costs
-SELECT name, membercost FROM cd.facilities;
--- 3. Facilities that charge a fee to members
-SELECT * FROM cd.facilities
-WHERE membercost > 0
--- 4. Facilities that charge a fee less than 1/50th of the monthly maintenance cost to members
-SELECT facid, name, membercost, monthlymaintenance FROM cd.facilities
-WHERE membercost < monthlymaintenance/50
--- 5. Facilities with the word 'Tennis' in their name
-SELECT * FROM cd.facilities
-WHERE name LIKE '%Tennis%'
--- 6. Details of facilities with ID1 and 5
-SELECT * FROM cd.facilities
-WHERE facid IN (1, 5)
--- 7. Members who joined after the start of September 2012
-SELECT memid, surname, firstname, joindate FROM cd.members
-WHERE joindate > '2012-09-01'
--- 8. Ordered list of the first 10 surnames in the members table
-SELECT DISTINCT surname FROM cd.members
-ORDER BY surname ASC
-LIMIT 10
--- 9. Signup date of your last member
-SELECT joindate FROM cd.members
-ORDER BY joindate DESC
-LIMIT 1
---
-SELECT MAX(joindate)
-FROM cd.members
--- 10. Number of facilities that have a cost to guests of 10 or more
-SELECT COUNT(*)
-FROM cd.facilities
-WHERE guestcost >= 10
--- 11. Number of slots booked per facility in the month of September 2012
-SELECT facid, SUM(slots)
-FROM cd.bookings
-WHERE EXTRACT(MONTH FROM starttime) = 9
-AND EXTRACT(YEAR FROM starttime) = 2012
-GROUP BY facid
--- 12. Facilities with more than 1000 slots booked
-SELECT facid, SUM(slots) AS total_slots
-FROM cd.bookings
-GROUP BY facid
-HAVING SUM(slots) > 1000
-ORDER BY facid
--- 13. Start times for bookings for tennis courts, for the date '2012-09-21'
-SELECT starttime, name
-FROM cd.bookings
-INNER JOIN cd.facilities
-ON cd.bookings.facid = cd.facilities.facid
-WHERE EXTRACT(YEAR FROM starttime) = 2012
-AND EXTRACT(MONTH FROM starttime) = 9
-AND EXTRACT(DAY FROM starttime) = 21
-AND name LIKE '%Tennis Court%'
-ORDER BY starttimes
--- 14. Start times for bookings by members named 'David Farrell'
-SELECT bookid, starttime, firstname || ' ' || surname
-FROM cd.bookings
-INNER JOIN cd.members
-ON cd.bookings.memid = cd.members.memid
-WHERE firstname LIKE 'David'
-AND surname LIKE 'Farrell'
-```
-
 ## 6. Creating Databases and Tables
 
 ### 6.1 Data Types
@@ -1811,3 +1706,223 @@ VALUES
 );
 ```
 
+## Assessments
+### Assessment 1 (After Section 3: Fundamentals + `GROUP BY`)
+
+1. Return the customer IDs of customers who have spent at least $110 with the staff member who has an ID of 2.
+
+The answer should be customers 187 and 148.
+
+```sql
+SELECT customer_id, staff_id, SUM(amount)
+FROM payment
+WHERE staff_id = 2
+GROUP BY customer_id, staff_id
+HAVING SUM(amount) >= 110;
+```
+
+2. How many films begin with the letter J?
+
+The answer should be 20.
+
+```sql
+SELECT COUNT(*)
+FROM film
+WHERE title LIKE 'J%'
+```
+
+3. What customer has the highest customer ID number whose name starts with an 'E' and has an address ID lower than 500?
+
+The answer is Eddie Tomlin
+
+```sql
+SELECT first_name, last_name
+FROM customer
+WHERE first_name LIKE 'E%' AND address_id < 500
+ORDER BY customer_id DESC
+LIMIT 1;
+```
+
+### Assessment 2 (After Section 5: Joins & Advanced Commands)
+
+A new database is provided, which needs to be restored as explained in Section 1.1:
+
+`./data/exercises.tar`
+
+After restoring it, we right-click on the left menu column of `pgAdmin` and select `Query Tool`.
+Note that the database has 2 schemas; we work with the schema `cd`, which has 3 tables:
+
+- `bookings`
+- `facilities`
+- `members`
+
+The database contains information of a sports resort that has facilities (e.g., tennis courts) booked by members.
+
+To select between schemas, every table in `cd` needs to be preceeded with `cd.`:
+
+```sql
+SELECT * FROM cd.bookings;
+SELECT * FROM cd.facilities;
+SELECT * FROM cd.members;
+```
+
+Exercises:
+
+```sql
+-- 1. Retrieve all the information from the cd.facilities table
+SELECT * FROM cd.facilities;
+-- 2. Retrieve a list of only facility names and costs
+SELECT name, membercost FROM cd.facilities;
+-- 3. Facilities that charge a fee to members
+SELECT * FROM cd.facilities
+WHERE membercost > 0
+-- 4. Facilities that charge a fee less than 1/50th of the monthly maintenance cost to members
+SELECT facid, name, membercost, monthlymaintenance FROM cd.facilities
+WHERE membercost < monthlymaintenance/50
+-- 5. Facilities with the word 'Tennis' in their name
+SELECT * FROM cd.facilities
+WHERE name LIKE '%Tennis%'
+-- 6. Details of facilities with ID1 and 5
+SELECT * FROM cd.facilities
+WHERE facid IN (1, 5)
+-- 7. Members who joined after the start of September 2012
+SELECT memid, surname, firstname, joindate FROM cd.members
+WHERE joindate > '2012-09-01'
+-- 8. Ordered list of the first 10 surnames in the members table
+SELECT DISTINCT surname FROM cd.members
+ORDER BY surname ASC
+LIMIT 10
+-- 9. Signup date of your last member
+SELECT joindate FROM cd.members
+ORDER BY joindate DESC
+LIMIT 1
+--
+SELECT MAX(joindate)
+FROM cd.members
+-- 10. Number of facilities that have a cost to guests of 10 or more
+SELECT COUNT(*)
+FROM cd.facilities
+WHERE guestcost >= 10
+-- 11. Number of slots booked per facility in the month of September 2012
+SELECT facid, SUM(slots)
+FROM cd.bookings
+WHERE EXTRACT(MONTH FROM starttime) = 9
+AND EXTRACT(YEAR FROM starttime) = 2012
+GROUP BY facid
+-- 12. Facilities with more than 1000 slots booked
+SELECT facid, SUM(slots) AS total_slots
+FROM cd.bookings
+GROUP BY facid
+HAVING SUM(slots) > 1000
+ORDER BY facid
+-- 13. Start times for bookings for tennis courts, for the date '2012-09-21'
+SELECT starttime, name
+FROM cd.bookings
+INNER JOIN cd.facilities
+ON cd.bookings.facid = cd.facilities.facid
+WHERE EXTRACT(YEAR FROM starttime) = 2012
+AND EXTRACT(MONTH FROM starttime) = 9
+AND EXTRACT(DAY FROM starttime) = 21
+AND name LIKE '%Tennis Court%'
+ORDER BY starttimes
+-- 14. Start times for bookings by members named 'David Farrell'
+SELECT bookid, starttime, firstname || ' ' || surname
+FROM cd.bookings
+INNER JOIN cd.members
+ON cd.bookings.memid = cd.members.memid
+WHERE firstname LIKE 'David'
+AND surname LIKE 'Farrell'
+```
+
+### Assessment 3 (After Section 8: `CREATE` Tables)
+
+> Welcome to your final assessment test! This will test your knowledge of the previous section, focused on creating databases and table operations. This test will actually consist of a more open-ended assignment below:
+
+> Create a new database called "School" this database should have two tables: teachers and students.
+
+> The students table should have columns for
+> - student_id, 
+> - first_name,
+> - last_name, 
+> - homeroom_number,
+> - phone,
+> - email,
+> - and graduation year.
+
+> The teachers table should have columns for
+> - teacher_id,
+> - first_name,
+> - last_name,
+> - homeroom_number,
+> - department,
+> - email, 
+> - and phone.
+
+> The constraints are mostly up to you, but your table constraints do have to consider the following:
+
+> - We must have a phone number to contact students in case of an emergency.
+> - We must have ids as the primary key of the tables.
+> - Phone numbers and emails must be unique to the individual.
+
+> Once you've made the tables, insert a student named Mark Watney (student_id=1) who has a phone number of 777-555-1234 and doesn't have an email. He graduates in 2035 and has 5 as a homeroom number.
+
+> Then insert a teacher names Jonas Salk (teacher_id = 1) who as a homeroom number of 5 and is from the Biology department. His contact info is: jsalk@school.org and a phone number of 777-555-4321.
+
+```sql
+-- students
+CREATE TABLE students (
+	student_id SERIAL PRIMARY KEY, 
+	first_name VARCHAR(50) NOT NULL,
+	last_name VARCHAR(50) NOT NULL, 
+	homeroom_number SMALLINT,
+	phone VARCHAR(20) UNIQUE NOT NULL,
+	email VARCHAR(100) UNIQUE,
+	graduation DATE CHECK (graduation > '1970-01-01')
+)
+-- teachers
+CREATE TABLE teachers (
+	teacher_id SERIAL PRIMARY KEY,
+	first_name VARCHAR(50) NOT NULL,
+	last_name VARCHAR(50) NOT NULL,
+	homeroom_number SMALLINT,
+	department VARCHAR(100),
+	email VARCHAR(100) UNIQUE NOT NULL, 
+	phone VARCHAR(20) UNIQUE
+-- insert a student
+INSERT INTO students
+(
+	first_name,
+	last_name,
+	homeroom_number,
+	phone,
+	graduation
+)
+VALUES
+(
+	'Mark',
+	'Watney', 
+	5,
+	'777-555-1234',
+	'2035-01-01'
+)
+-- insert a teacher
+INSERT INTO teachers
+(
+	first_name,
+	last_name,
+	homeroom_number,
+	phone,
+	department,
+	email
+)
+VALUES
+(
+	'Jonas',
+	'Salk', 
+	5,
+	'777-555-4321',
+	'Biology',
+	'jsalk@school.org'
+)
+)
+```
