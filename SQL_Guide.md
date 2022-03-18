@@ -1355,10 +1355,10 @@ Common data types are:
 - Character: char, varchar, text
 - Numeric: integer, float
 - Temporal/date: date, time, timestamp, interval
+- **SERIAL**: sequence of integers, used for the table keys; automatically generated as we enter rows. Interestingly, when we remove a row, values are kept. Also, when we fail to insert a non-value value, the counter increases.
 
 Other data types:
 
-- SERIAL: sequence of integers, used for the table keys; automatically generated as we enter rows
 - UUID: Universally Unique Identifier
 - Array: arrays of strings, numbers, etc.
 - JSON and XML
@@ -1661,8 +1661,14 @@ We can change the structure of a table with the `ALTER` clause, and perform the 
 - Add `CHECK` constraints.
 - Renaming a table.
 
+There are actually **a lot of options** and we should check the documentation!
+
+[PostgreSQL: ALTER TABLE](https://www.postgresql.org/docs/current/sql-altertable.html)
+
 ```sql
 -- General syntax
+-- There are many possibilities so as to what can be done...
+-- Note that when changing a column, ALTER TABLE must be used first
 ALTER TABLE table_name
 ADD COLUMN new_col type
 --
@@ -1673,4 +1679,135 @@ ALTER TABLE table_name
 ALTER COLUMN col_name
 SET DEFAULT value
 -- 
+ALTER TABLE table_name
+ALTER COLUMN col_name
+DROP DEFAULT
+--
+ALTER TABLE table_name
+ALTER COLUMN col_name
+SET NOT NULL
+--
+ALTER TABLE table_name
+ALTER COLUMN col_name
+DROP NOT NULL
+--
+ALTER TABLE table_name
+ALTER COLUMN col_name
+ADD CONSTRAINT constraint_name
+--
+ALTER TABLE table_name
+RENAME TO new_name
+--
+ALTER TABLE table_name
+RENAME COLUMN col_1 TO col_A
 ```
+
+Examples with `learning_db`:
+
+```sql
+-- 1. We create a table
+CREATE TABLE information (
+    info_id SERIAL PRIMARY KEY,
+    title VARCHAR(500) NOT NULL,
+    person VARCHAR(50) NOT NULL UNIQUE
+)
+-- 1. We change the  table's name
+ALTER TABLE information
+RENAME TO new_info
+-- 2. We change the name of a column
+ALTER TABLE new_info
+RENAME COLUMN person TO people
+-- 3. We change the constraints of a column
+ALTER TABLE new_info
+ALTER COLUMN people
+DROP NOT NULL
+-- 4. 
+```
+
+### 6.9 `DROP TABLE`
+
+While `DELETE` removes rows, `DROP` removes entirely a column: its values, indices, constraints, etc. However, `DROP` dows not remove columns used things dependent on it (e.g., views, triggers or stored procedures) without the additional `CASCADE` clause.
+
+```sql
+-- General syntax
+--
+-- Case 1: Simply remove a column
+ALTER TABLE table_name
+DROP COLUMN col_name
+-- Case 2: Remove the column and all objects using it, i.e., dependencies
+ALTER TABLE table_name
+DROP COLUMN col_name CASCADE
+-- Case 3: Remove a column if it exists
+-- That's the usual call, 
+-- because if we try to drop a col that doesn't exist,
+-- we get an error
+ALTER TABLE table_name
+DROP COLUMN IF EXISTS col_name
+-- Case 4: Drop multiple columns
+ALTER TABLE table_name
+DROP COLUMN col_1,
+DROP COLUMN col_2
+```
+
+Examples with `learning_db`:
+
+```sql
+-- We see we have a column 'people'
+SELECT * FROM new_info
+-- Remove that column
+ALTER TABLE new_info
+DROP COLUMN people
+-- Check that the column is not there
+SELECT * FROM new_info
+-- Try to remove it again
+ALTER TABLE new_info
+DROP COLUMN IF EXISTS people
+```
+
+### 6.10 `CHECK` Constraints
+
+With `CHECK` we can make sure an inserted value matches a constraint, e.g., the value is in a range.
+
+```sql
+-- General syntax with an example
+CREATE TABLE example (
+    ex_id SERIAL PRIMARY KEY,
+    age SMALLINT CHECK (age > 21),
+    parent_age SMALLINT CHECK (parent_age > age)
+);
+```
+
+Examples with `learning_db`:
+
+```sql
+-- Create table employees: CHECK constraint is used in the dates
+CREATE TABLE employees (
+    emp_id SERIAL PRIMARY KEY,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    birthdate DATE CHECK (birthdate > '1900-01-01'),
+    hired_date DATE CHECK (hired_date > birthdate),
+    salary INTEGER CHECK (salary > 0)
+)
+-- Now, we insert values to the table employees
+-- If we put the salary value in negative,
+-- we get an error related to the CHECK
+-- Note that SERIAL increases also with failed attempts to insert values
+INSERT INTO employees
+(
+    first_name,
+    last_name,
+    birthdate,
+    hired_date,
+    salary
+)
+VALUES
+(
+    'Jose',
+    'Portilla',
+    '1999-11-03',
+    '2010-01-01',
+    100
+);
+```
+
