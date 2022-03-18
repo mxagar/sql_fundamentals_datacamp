@@ -1512,8 +1512,165 @@ FROM another_table
 WHERE condition;
 ```
 
-In the following, some examples with the `learning_db` we created:
+In the following, an example with the `learning_db` we just created:
 
 ```sql
+-- learning_db
+--
+-- Step 1: Check account is empty
+SELECT * FROM account;
+-- Step 2: insert a line
+-- Note the keyword CURRENT_TIMESTAMP
+-- and also the fact that we don't insert the last login
+INSERT INTO account (username, password, email, created_on)
+VALUES
+	('Jose', 'password', 'jose@email.com', CURRENT_TIMESTAMP);
+-- Step 3: Check account again: new row appears
+SELECT * FROM account;
+-- Step 4: Insert new jobs
+INSERT INTO job (job_name)
+VALUES
+	('Astronaut');
+--
+INSERT INTO job (job_name)
+VALUES
+	('President')
+-- Step 5: Check new jobs are in the table
+SELECT * FROM account;
+-- Step 6: Insert entries to account_job
+INSERT INTO account_job (user_id, job_id, hired_date)
+VALUES
+	(1, 1, CURRENT_TIMESTAMP);
+-- Step 7: Check new row in account_job
+SELECT * FROM account_job;
+-- Step 8: Violate the foreign key constraint to get an error
+-- PostgreSQL keeps the consistency! 
+INSERT INTO account_job (user_id, job_id, hired_date)
+VALUES
+	(10, 10, CURRENT_TIMESTAMP);
+```
 
+### 6.6 `UPDATE` the Rows of a Table
+
+There are many ways of using `UPDATE`:
+
+```sql
+-- General syntax
+--
+-- Case 1: we just pass the values manually
+-- We can use a WHERE condition to find/filter the row/s we want
+UPDATE table_name
+SET
+    column1 = value1,
+    column2 = value2,
+WHERE
+    condition;
+-- Case 2: We can change several rows with a keyword
+UPDATE account
+SET
+    last_login = CURRENT_TIMESTAMP
+WHERE
+    last_login IS NULL;
+-- Case 3: We can change all the rows with a value
+UPDATE account
+SET
+    last_login = CURRENT_TIMESTAMP;
+-- Case 4: We can copy the contents from column to column
+UPDATE account
+SET
+    last_login = created_on;
+-- Case 5: UPDATE JOIN (without the JOIN keyword)
+-- We can copy the values from another table, cross-indexing with the id values
+UPDATE TableA
+SET original_col = TableB.new_col
+FROM TableB
+WHERE TableA.id = TableB.id;
+-- Case 6: We can return the rows that were updated
+-- That way, e don't to do any SELECT afterwards
+UPDATE account
+SET
+    last_login = created_on
+RETURNING
+    account_id, last_login;
+```
+
+Examples with the `learning_db` we created:
+
+```sql
+-- We replace the NULL value of last_login
+UPDATE account
+SET last_login = CURRENT_TIMESTAMP
+-- We replace the value of last_login with the value(s) of the column in created_on
+UPDATE account
+SET last_login = created_on
+-- We change the hired_date from account_job using another table
+-- That is a UNION JOIN
+UPDATE account_job
+SET hired_date = account.created_on
+FROM account
+WHERE account_job.user_id = account.user_id;
+-- Get the row values we change
+UPDATE account
+SET last_login = CURRENT_TIMESTAMP
+RETURNING email, created_on, last_login
+```
+
+### 6.7 `DELETE` to Remove Rows from a Table
+
+We can remove rows with `DELETE`. If we try  to remove rows that don't exist, nothing happens.
+
+```sql
+-- General syntax
+--
+-- Case 1: Delete row which satisfies the condition,
+-- it doesn't need to be the primary key (PK)
+DELETE FROMtable_name
+WHERE row_id = 1
+-- Case 2: DELETE JOIN: we remove rows that match in another table
+DELETE FROM TableA
+USING TableB
+WHERE TableA.id = TableB.id
+-- Case 3: Delete all rows
+DELETE FROM table_name
+-- Case 4: We can always add RETURNINg to get the values of the removed rows
+DELETE FROMtable_name
+WHERE row_id = 1
+RETURNING col1, col2
+```
+
+Examples with `learning_db`:
+
+```sql
+-- Insert a new job
+INSERT INTO job(job_name)
+VALUES
+	('Cowboy')
+-- Remove that job and get row back as output
+DELETE FROM job
+WHERE job_name = 'Cowboy'
+RETURNING job_id, job_name
+```
+
+### 6.8 `ALTER` a Table
+
+We can change the structure of a table with the `ALTER` clause, and perform the following operations:
+
+- Adding, dropping, renamig columns.
+- Changing a column's datatype.
+- Set `DEFAULT` values to a column.
+- Add `CHECK` constraints.
+- Renaming a table.
+
+```sql
+-- General syntax
+ALTER TABLE table_name
+ADD COLUMN new_col type
+--
+ALTER TABLE table_name
+DROP COLUMN col_name
+--
+ALTER TABLE table_name
+ALTER COLUMN col_name
+SET DEFAULT value
+-- 
 ```
