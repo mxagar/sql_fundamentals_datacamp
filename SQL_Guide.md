@@ -236,9 +236,10 @@ Some general notes:
 
 - Comments are created with `--`; they can be at beginning/end of line.
 - Statements can be in one or multiple lines.
-- A statement finishes with `;`.
+- A statement finishes with `;`. However, `pgAdmin` seems to work also without that.
 - Numbers (int/float) are represented by regular numbers.
 - Strings and dates are represented by single quotes: 'text'.
+- Space and indentations are ignored, but we should write understandable code with proper indentations and lines.
 
 We need to think that SQL statements are usually the translation to code of business questions.
 
@@ -1706,6 +1707,165 @@ VALUES
 );
 ```
 
+## 7. Conditional Expressions and Procedures
+
+### 7.1 `CASE`
+
+With `CASE` we can display a new column called by default `case` which contains values that yield some conditional statements we define in it. We can label the column's name with an alias.
+
+```sql
+-- General syntax with examples
+--
+-- Example 1: General - custom expressions
+-- We have a column 'column_name' with row values (1), (2), (3)
+-- We display a new column next to it called 'my_label' which contains values
+-- ('one'), ('two'), ('other')
+-- Note that there is a comma after 'SELECT column_name',
+-- because CAS yields a column to SELECT!
+SELECT column_name,
+CASE
+    WHEN column_name = 1 THEN 'one'
+    WHEN column_name = 2 THEN 'two'
+    ELSE 'other'
+AS my_label
+END
+FROM table_name;
+-- Example 2: CASE expression - unique expression
+-- Instead of evaluating an expression in WHEN
+-- we evaluate it after CASE and compare its value in WHEN
+-- Note that the general case is more flexible,
+-- because we can have many expressions and logical operators (=, >, etc.),
+-- whereas this second way admits only one expression
+-- which needs to equal (=) some values!
+CASE expression
+    WHEN value1 THEN result1
+    WHEN value2 THEN result2
+    ELSE some_other_result
+END
+-- We rewrite the first statement using CASE expression
+SELECT column_name,
+CASE column_name
+    WHEN 1 THEN 'one'
+    WHEN 2 THEN 'two'
+    ELSE 'other'
+AS my_label
+END
+FROM table_name;
+```
+
+Examples with the `dvdrental` database:
+
+```sql
+-- We want to congratulate the first 100 customers
+-- We label them according to their customer_id
+SELECT customer_id,
+CASE
+	WHEN (customer_id <= 100) THEN 'Premium'
+	WHEN (customer_id BETWEEN 100 and 200) THEN 'Plus'
+	ELSE 'Normal'
+END AS customer_class
+FROM customer
+-- Suppose we have a raffle and the winner and second price are ids 2 & 5, resp.
+SELECT customer_id,
+CASE customer_id
+	WHEN 2 THEN 'Winner'
+	WHEN 5 THEN 'Second Place'
+	ELSE 'Normal'
+END AS raffle_results
+FROM customer
+-- Creative example:
+-- We want to count and display in a table
+-- the number of movies categorizes according to their rental price:
+-- bargain, normal, premium.
+-- Note:
+-- - There is no col name after SELECT but SUM(CASE)
+-- - We could compute these values with GROUP BY, but now we have more flexibility
+-- - It is quite common to use this structure
+SELECT
+SUM(CASE rental_rate
+	WHEN 0.99 THEN 1
+	ELSE 0
+END) AS bargains,
+SUM(CASE rental_rate
+	WHEN 2.99 THEN 1
+	ELSE 0
+END) AS regular,
+SUM(CASE rental_rate
+	WHEN 4.99 THEN 1
+	ELSE 0
+END) AS premium
+FROM film
+```
+
+#### Challenge Task
+
+We want to compare various amounts of films we have per movie in `dvdrental`, categorized according to movie rating: R, PF, PG3.
+
+```sql
+SELECT DISTINCT rating FROM film
+--
+SELECT
+SUM(CASE rating
+	WHEN 'R' THEN 1
+	ELSE 0
+END) AS r,
+SUM(CASE rating
+	WHEN 'PG' THEN 1
+	ELSE 0
+END) AS pg,
+SUM(CASE rating
+	WHEN 'PG-13' THEN 1
+	ELSE 0
+END) AS pg13
+FROM film;
+```
+
+### 7.2 `COALESCE`: Replace `null` Values to Perform Mathematical Operations
+
+`COALESCE` accepts an unlimited number of arguments; it returns the first argument that is not `null`. If all are `null`, then `null` is returned. It is typically used to convert `null` values to `0` in order to be able to perform mathematical operations with them.
+
+```sql
+-- General syntax
+SELECT COALESCE (arg_1, arg_2, arg_3, ..., arg_n)
+--
+SELECT COALESCE (1,2) -- 1
+SELECT COALESCE (NULL, 2, 3) -- 2
+```
+
+Let's take as example the following table: we have `item` names, their `price` and a `discount` value. The items without discount value have a discount of `null`; if we perform operations with them to obtain the `final` price, the results will be `null` if the `null` value is used in a row.
+
+![Coalesce: table](./pics/coalesce_table.png)
+
+Thus, instead of directly performing operations with the raw column, we apply `COALESCE`:
+
+```sql
+SELECT item, (price - COALESCE(discount, 0)) AS final
+FROM table
+```
+
+### 7.3 `CAST`: Convert One Data Type into Another
+
+We can convert one data type into another with `CAST`, but both types must be convertable. There are two ways of casting:
+
+- General SQL way: `SELECT CAST('5' AS INTEGER)`
+- PostgreSQL specific cast `SELECT '5'::INTEGER`
+
+```sql
+-- Convert a date string into a timestamp
+SELECT CAST(date AS TIMESTAMP)
+FROM table
+--
+-- dvdrental
+--
+-- inventory_id (int) is converted to a VARCHAR to count the number off digits
+-- One use case of CAST is to use type-specific functions, e.g., with strings.
+SELECT CHAR_LENGTH(CAST(inventory_id AS VARCHAR)) FROM rental
+```
+
+### 7.4 `NULLIF`
+
+
+
 ## Assessments
 ### Assessment 1 (After Section 3: Fundamentals + `GROUP BY`)
 
@@ -1926,3 +2086,4 @@ VALUES
 )
 )
 ```
+
