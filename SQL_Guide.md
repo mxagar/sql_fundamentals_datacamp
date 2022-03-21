@@ -2083,7 +2083,10 @@ Then, we follow these simple steps:
 1. We connect to the SQL server with the database name, our username and password.
 2. We execute the SQL query passing it as a string.
 3. We fetch the results as a list of tuples, being each tuple a row.
-4. When we are finished, we disconnet from the server/database.
+4. If we changed anything in the database and we want to keep it, we need to `commit()`.
+5. When we are finished, always disconnect from the server/database.
+
+For more information, look at the [psycopg2 documentation](https://www.psycopg.org/docs/).
 
 In the notebook `./SQL_Python.ipynb` we can see a brief example with `dvdrental`:
 
@@ -2143,8 +2146,25 @@ payments[0]
 # 5th value in tuple of first row
 payments[0][4]
 
-# Close the connection
+# Always close the connection when finished!
 conn.close()
+
+####
+
+# Inserting Information: if we want to change the DB, we need to commit()
+query_str = '''
+            CREATE TABLE new_table (
+                userid integer
+                , tmstmp timestamp
+                , type varchar(10)
+            );
+            '''
+# Execute, as before
+cur.execute(query)           
+
+# We need to commit the changes to make them persistent
+cur.commit()
+
 ```
 
 ## Assessments
