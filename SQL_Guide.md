@@ -2067,7 +2067,85 @@ SELECT * FROM simple;
 
 ## 8. PostGreSQL with Python
 
+We can connect and interact with relational databases using SQL via python by using the python library `psycopg2`.
 
+First, we need to install it:
+
+```bash
+brew install libpq
+# I had issues with the current version 2.9.3 on my Mac M1
+# pip install psycopg2
+# So after googling, I installed a previous version
+pip install psycopg2-binary==2.9.2
+````
+
+Then, we follow these simple steps:
+1. We connect to the SQL server with the database name, our username and password.
+2. We execute the SQL query passing it as a string.
+3. We fetch the results as a list of tuples, being each tuple a row.
+4. When we are finished, we disconnet from the server/database.
+
+In the notebook `./SQL_Python.ipynb` we can see a brief example with `dvdrental`:
+
+```python
+
+import psycopg2 as pg2
+
+# Get PostgreSQL server password, stored in a TXT
+# Make sure the PW is not uploaded to Github
+# and try encrypting it
+# This way is not the most secure one, though
+lines = []
+with open('secret.txt') as f:
+    lines = f.readlines()
+pw = str(lines[0]).split('\n')[0]
+
+# Connect to the database
+# user: by default it's postgres, but maybe we have chosen another one
+# password: the one we introduced for the PostgreSQL server
+conn = pg2.connect(database='dvdrental',
+                   user='postgres',
+                   password=pw)
+
+# Retrieve the cursor: 
+# this is like a pointer to the place in the database
+# the server is in
+cur = conn.cursor()
+
+# Execute the SQL statement/query we want passed as a string
+# Advice: don't automatize too much the generation of the query_string
+# because we might unwillingly break the database, e.g., by removing tables
+query_string = 'SELECT * FROM payment'
+cur.execute(query_string)
+
+# Now, the cursor object has the result of the query,
+# which can be accessed via:
+# - fetchall() # all rows returned in a list of tuples
+# - fetchmany(n) # the first n rows returned in a list of tuples
+# - fetone() # the first row returned as a tuple
+# Important: once we fo fetch*, the returned row entries are removed from cur!
+# Note that date columns are transformed to python datetime, for our convnience
+cur.fetchone()
+
+cur.fetchmany(3)
+
+# All rows of the result fetched into a list of tuples
+# Each tuple is a row
+# We can carry out tuple unpacking
+payments = cur.fetchall()
+
+# Count all entries/rows
+len(payments)
+
+# First row tuple
+payments[0]
+
+# 5th value in tuple of first row
+payments[0][4]
+
+# Close the connection
+conn.close()
+```
 
 ## Assessments
 ### Assessment 1 (After Section 3: Fundamentals + `GROUP BY`)
