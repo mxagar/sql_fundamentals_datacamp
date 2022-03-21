@@ -3,3 +3,5 @@ udemy_sql
 build
 .vscode
 data/dvdrental.tar
+secret.txt
+.ipynb_checkpoints
