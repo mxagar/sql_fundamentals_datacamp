@@ -1,8 +1,8 @@
 # SQL Guide
 
-This repository contains my notes after following as refreshers the [SQL Fundamentals skill track](https://app.datacamp.com/learn/skill-tracks/sql-fundamentals) from Datacamp and [The Complete SQL Bootcamp](https://www.udemy.com/course/the-complete-sql-bootcamp/) by José Marcial Portilla from Udemy.
+This repository contains my notes after following as refresher [The Complete SQL Bootcamp](https://www.udemy.com/course/the-complete-sql-bootcamp/) by José Marcial Portilla from Udemy.
 
-The [SQL Fundamentals skill track](https://app.datacamp.com/learn/skill-tracks/sql-fundamentals) is composed by the following courses:
+I have also looked at the [SQL Fundamentals skill track](https://app.datacamp.com/learn/skill-tracks/sql-fundamentals) from Datacamp, composed by the following courses:
 
 1. [Introduction to SQL](https://app.datacamp.com/learn/courses/introduction-to-sql)
 2. [Joining Data in SQL](https://app.datacamp.com/learn/courses/joining-data-in-sql)
@@ -49,6 +49,7 @@ The [The Complete SQL Bootcamp](https://www.udemy.com/course/the-complete-sql-bo
    - 5.4 String Functions and Operations
    - 5.5 Sub-Queries
    - 5.6 Self-Joins
+   - 5.7 `OVER`: Window Functions (PostgreSQL)
 6. Creating Databases and Tables
    - 6.1 Data Types
    - 6.2 Primary and Foreign Keys
@@ -61,8 +62,14 @@ The [The Complete SQL Bootcamp](https://www.udemy.com/course/the-complete-sql-bo
    - 6.9 `DROP TABLE`
    - 6.10 `CHECK` Constraints
 7. Conditional Expressions and Procedures
+   - 7.1 `CASE`
+   - 7.2 `COALESCE`: Replace `null` Values to Perform Mathematical Operations
+   - 7.3 `CAST`: Convert One Data Type into Another
+   - 7.4 `NULLIF()`
+   - 7.5 Views
+   - 7.6 Import & Export of CSV Tables
 8. PostGreSQL with Python
-9. Assessments
+9.  Assessments
    - Assessment 1
    - Assessment 2
    - Assessment 3
@@ -1237,6 +1244,70 @@ INNER JOIN film as f2
 ON f1.film_id != f2.film_id
 AND f1.length = f2.length
 ```
+
+### 5.7 `OVER`: Window Functions (PostgreSQL)
+
+Window functions are similar to aggregate functions, but instead of returning a row/value for many rows in the query, they return one value for each of the rows in the original query.
+
+Example (from the [PostgreSQL documentation](https://www.postgresql.org/docs/current/tutorial-window.html)) in which a employee salary is compared against the average salary of the department they belong to:
+
+```sql
+SELECT depname, empno, salary, avg(salary) OVER (PARTITION BY depname)
+FROM empsalary;
+```
+
+Result:
+
+```
+  depname  | empno | salary |          avg          
+-----------+-------+--------+-----------------------
+ develop   |    11 |   5200 | 5020.0000000000000000
+ develop   |     7 |   4200 | 5020.0000000000000000
+ develop   |     9 |   4500 | 5020.0000000000000000
+ develop   |     8 |   6000 | 5020.0000000000000000
+ develop   |    10 |   5200 | 5020.0000000000000000
+ personnel |     5 |   3500 | 3700.0000000000000000
+ personnel |     2 |   3900 | 3700.0000000000000000
+ sales     |     3 |   4800 | 4866.6666666666666667
+ sales     |     1 |   5000 | 4866.6666666666666667
+ sales     |     4 |   4800 | 4866.6666666666666667
+(10 rows)
+```
+
+The window happens with the column
+
+`avg(salary) OVER (PARTITION BY depname)`
+
+which applies a function (aggregate) over a column but yields the value for each row, which is different, depending on the department of the employee.
+
+Another example:
+
+```sql
+SELECT depname, empno, salary,
+       rank() OVER (PARTITION BY depname ORDER BY salary DESC)
+FROM empsalary;
+```
+
+Result:
+
+```
+  depname  | empno | salary | rank 
+-----------+-------+--------+------
+ develop   |     8 |   6000 |    1
+ develop   |    10 |   5200 |    2
+ develop   |    11 |   5200 |    2
+ develop   |     9 |   4500 |    4
+ develop   |     7 |   4200 |    5
+ personnel |     2 |   3900 |    1
+ personnel |     5 |   3500 |    2
+ sales     |     1 |   5000 |    1
+ sales     |     4 |   4800 |    2
+ sales     |     3 |   4800 |    2
+(10 rows)
+```
+
+For more information: [Window FUnctions](https://www.postgresql.org/docs/current/tutorial-window.html).
+
 ## 6. Creating Databases and Tables
 
 ### 6.1 Data Types
@@ -1993,6 +2064,10 @@ SELECT * FROM simple;
 -- For exporting, we need to follow the same steps,
 -- but the switch Export needs to be selected!
 ```
+
+## 8. PostGreSQL with Python
+
+
 
 ## Assessments
 ### Assessment 1 (After Section 3: Fundamentals + `GROUP BY`)
