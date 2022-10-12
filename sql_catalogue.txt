@@ -2,3 +2,6 @@ This is a TXT form cheat sheet for SQL statements.
 Mikel Sagardia, 2022.
 No warranties.
 
+
+https://medium.com/@fmnobar/sql-requirements-for-a-data-scientist-in-amazon-cheat-sheet-b1e24004ede7
+
