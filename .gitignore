@@ -5,3 +5,4 @@ build
 data/dvdrental.tar
 secret.txt
 .ipynb_checkpoints
+SQLNotes.pdf
