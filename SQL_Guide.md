@@ -1,84 +1,77 @@
 # SQL Guide
 
-This repository contains my notes after following as refresher [The Complete SQL Bootcamp](https://www.udemy.com/course/the-complete-sql-bootcamp/) by José Marcial Portilla from Udemy.
+This file contains my personal guide on SQL. All levels are covered progressively.
 
-I have also looked at the [SQL Fundamentals skill track](https://app.datacamp.com/learn/skill-tracks/sql-fundamentals) from Datacamp, composed by the following courses:
+If you are looking for a cheat sheet rather than a guide, check the co-located file [`sql_catalogue.txt`](sql_catalogue.txt).
 
-1. [Introduction to SQL](https://app.datacamp.com/learn/courses/introduction-to-sql)
-2. [Joining Data in SQL](https://app.datacamp.com/learn/courses/joining-data-in-sql)
-3. [Intermediate SQL](https://app.datacamp.com/learn/courses/intermediate-sql)
-4. [PostgreSQL Summary Stats and Window Functions](https://app.datacamp.com/learn/courses/postgresql-summary-stats-and-window-functions)
-5. [Functions for Manipulating Data in PostgreSQL](https://app.datacamp.com/learn/courses/functions-for-manipulating-data-in-postgresql)
+I composed this document after refreshing my SQL knowledge by following [The Complete SQL Bootcamp](https://www.udemy.com/course/the-complete-sql-bootcamp/), created by José Marcial Portilla (Udemy). Another interesting course I checked and used is the [SQL for Data Analysis](https://www.udacity.com/course/sql-for-data-analysis--ud198) by Udacity.
 
-The [The Complete SQL Bootcamp](https://www.udemy.com/course/the-complete-sql-bootcamp/) is composed by the following sections:
+**Table of Contents:**
 
-1. Introduction & Setup
-   - 1.1 Installation: `PostgreSQL` & `pgAdmin`
-   - 1.2 `pgAdmin` Overview
-   - 1.3 Command Line Interface (CLI): Installation & Setup on Mac
-2. SQL Statement Fundamentals
-   - `SELECT`
-   - `SELECT DISTINCT`
-   - `COUNT`
-   - `SELECT WHERE`
-   - `ORDER BY`
-   - `LIMIT`
-   - `BETWEEN`
-   - `IN`
-   - `LIKE` and `ILIKE`
-   - Challenges / Exercises
-3. `GROUP BY` Statements
-   - 3.1 Aggregate Functions
-   - 3.2 `GROUP BY`
-     - `GROUP BY`: Examples
-     - `GROUP BY`: Challenges / Exercises
-   - 3.3 `HAVING`
-     - `HAVING` Challenges / Exercises
-4. `JOINS`
-   - 4.1 `AS`
-   - 4.2 `INNER JOIN`
-   - 4.3 `FULL OUTER JOIN` + `WHERE`
-   - 4.4 `LEFT (OUTER) JOIN` + `WHERE`
-   - 4.5 `RIGHT (OUTER) JOIN` + `WHERE`
-   - 4.6 `UNION`
-   - 4.7 Challenges: Very Important Examples
-5. Advanced SQL Commands
-   - 5.1 Obtaining Time Information
-   - 5.2 Extracting Time Information
-   - 5.3 Mathematical Functions
-   - 5.4 String Functions and Operations
-   - 5.5 Sub-Queries
-   - 5.6 Self-Joins
-   - 5.7 `OVER`: Window Functions (PostgreSQL)
-6. Creating Databases and Tables
-   - 6.1 Data Types
-   - 6.2 Primary and Foreign Keys
-   - 6.3 Constraints
-   - 6.4 `CREATE` Table
-   - 6.5 `INSERT` Rows into a Table
-   - 6.6 `UPDATE` the Rows of a Table
-   - 6.7 `DELETE` to Remove Rows from a Table
-   - 6.8 `ALTER` a Table
-   - 6.9 `DROP TABLE`
-   - 6.10 `CHECK` Constraints
-7. Conditional Expressions and Procedures
-   - 7.1 `CASE`
-   - 7.2 `COALESCE`: Replace `null` Values to Perform Mathematical Operations
-   - 7.3 `CAST`: Convert One Data Type into Another
-   - 7.4 `NULLIF()`
-   - 7.5 Views
-   - 7.6 Import & Export of CSV Tables
-8. PostGreSQL with Python
-9.  Assessments
-   - Assessment 1
-   - Assessment 2
-   - Assessment 3
+- [SQL Guide](#sql-guide)
+  - [1. Introduction & Setup](#1-introduction--setup)
+    - [1.1 Installation: `PostgreSQL` & `pgAdmin`](#11-installation-postgresql--pgadmin)
+    - [1.2 `pgAdmin` Overview](#12-pgadmin-overview)
+    - [1.3 Command Line Interface (CLI): Installation & Setup on Mac](#13-command-line-interface-cli-installation--setup-on-mac)
+  - [2. SQL Statement Fundamentals](#2-sql-statement-fundamentals)
+    - [`SELECT`](#select)
+    - [`SELECT DISTINCT`](#select-distinct)
+    - [`COUNT`](#count)
+    - [`SELECT WHERE`](#select-where)
+    - [`ORDER BY`](#order-by)
+    - [`LIMIT`](#limit)
+    - [`BETWEEN`](#between)
+    - [`IN`](#in)
+    - [`LIKE` and `ILIKE`](#like-and-ilike)
+    - [Challenges / Exercises](#challenges--exercises)
+  - [3. `GROUP BY` Statements](#3-group-by-statements)
+    - [3.1 Aggregate Functions](#31-aggregate-functions)
+    - [3.2 `GROUP BY`](#32-group-by)
+      - [`GROUP BY`: Examples](#group-by-examples)
+      - [`GROUP BY`: Challenges / Exercises](#group-by-challenges--exercises)
+    - [3.3 `HAVING`](#33-having)
+      - [`HAVING` Challenges / Exercises](#having-challenges--exercises)
+  - [4. `JOINS`](#4-joins)
+    - [4.1 `AS`](#41-as)
+    - [4.2 `INNER JOIN`](#42-inner-join)
+    - [4.3 `FULL OUTER JOIN` + `WHERE`](#43-full-outer-join--where)
+    - [4.4 `LEFT (OUTER) JOIN` + `WHERE`](#44-left-outer-join--where)
+    - [4.5 `RIGHT (OUTER) JOIN` + `WHERE`](#45-right-outer-join--where)
+    - [4.6 `UNION`](#46-union)
+    - [4.7 Challenges: Very Important Examples](#47-challenges-very-important-examples)
+  - [5. Advanced SQL Commands](#5-advanced-sql-commands)
+    - [5.1 Obtaining Time Information](#51-obtaining-time-information)
+    - [5.2 Extracting Time Information](#52-extracting-time-information)
+    - [5.3 Mathematical Functions](#53-mathematical-functions)
+    - [5.4 String Functions and Operations](#54-string-functions-and-operations)
+    - [5.5 Sub-Queries](#55-sub-queries)
+    - [5.6 Self-Joins](#56-self-joins)
+    - [5.7 `OVER`: Window Functions (PostgreSQL)](#57-over-window-functions-postgresql)
+  - [6. Creating Databases and Tables](#6-creating-databases-and-tables)
+    - [6.1 Data Types](#61-data-types)
+    - [6.2 Primary and Foreign Keys](#62-primary-and-foreign-keys)
+    - [6.3 Constraints](#63-constraints)
+    - [6.4 `CREATE` Table](#64-create-table)
+    - [6.5 `INSERT` Rows into a Table](#65-insert-rows-into-a-table)
+    - [6.6 `UPDATE` the Rows of a Table](#66-update-the-rows-of-a-table)
+    - [6.7 `DELETE` to Remove Rows from a Table](#67-delete-to-remove-rows-from-a-table)
+    - [6.8 `ALTER` a Table](#68-alter-a-table)
+    - [6.9 `DROP TABLE`](#69-drop-table)
+    - [6.10 `CHECK` Constraints](#610-check-constraints)
+  - [7. Conditional Expressions and Procedures](#7-conditional-expressions-and-procedures)
+    - [7.1 `CASE`](#71-case)
+      - [Challenge Task](#challenge-task)
+    - [7.2 `COALESCE`: Replace `null` Values to Perform Mathematical Operations](#72-coalesce-replace-null-values-to-perform-mathematical-operations)
+    - [7.3 `CAST`: Convert One Data Type into Another](#73-cast-convert-one-data-type-into-another)
+    - [7.4 `NULLIF()`](#74-nullif)
+    - [7.5 Views](#75-views)
+    - [7.6 Import & Export of CSV Tables](#76-import--export-of-csv-tables)
+  - [8. PostGreSQL with Python](#8-postgresql-with-python)
+  - [Assessments](#assessments)
+    - [Assessment 1 (After Section 3: Fundamentals + `GROUP BY`)](#assessment-1-after-section-3-fundamentals--group-by)
+    - [Assessment 2 (After Section 5: Joins & Advanced Commands)](#assessment-2-after-section-5-joins--advanced-commands)
+    - [Assessment 3 (After Section 8: `CREATE` Tables)](#assessment-3-after-section-8-create-tables)
 
-The current file is a **summary/guide of my notes and SQL in general**.
-
-**Overview**
-
-1. Introduction & Setup
 
 ## 1. Introduction & Setup
 
