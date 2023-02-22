@@ -2,17 +2,21 @@
 
 This file contains my personal guide on SQL. All levels are covered progressively.
 
-If you are looking for a cheat sheet rather than a guide, check the co-located file [`sql_catalogue.txt`](sql_catalogue.txt).
+If you are looking for a cheat sheet rather than a guide, check the co-located file [`sql_catalogue.txt`](sql_catalogue.txt), which I plan to complete sometime.
 
-I composed this document after refreshing my SQL knowledge by following [The Complete SQL Bootcamp](https://www.udemy.com/course/the-complete-sql-bootcamp/), created by José Marcial Portilla (Udemy). Another interesting course I checked and used is the [SQL for Data Analysis](https://www.udacity.com/course/sql-for-data-analysis--ud198) by Udacity.
+I composed this document after refreshing my SQL knowledge by following several courses/tutorials:
+
+- [The Complete SQL Bootcamp](https://www.udemy.com/course/the-complete-sql-bootcamp/), created by José Marcial Portilla (Udemy)
+- [SQL for Data Analysis](https://www.udacity.com/course/sql-for-data-analysis--ud198) by Udacity.
+- [Python MySQL Tutorial](https://www.w3schools.com/python/python_mysql_getstarted.asp) from W3schools.
 
 **Table of Contents:**
 
 - [SQL Guide](#sql-guide)
-  - [1. Introduction & Setup](#1-introduction--setup)
-    - [1.1 Installation: `PostgreSQL` & `pgAdmin`](#11-installation-postgresql--pgadmin)
+  - [1. Introduction \& Setup](#1-introduction--setup)
+    - [1.1 Installation: `PostgreSQL` \& `pgAdmin`](#11-installation-postgresql--pgadmin)
     - [1.2 `pgAdmin` Overview](#12-pgadmin-overview)
-    - [1.3 Command Line Interface (CLI): Installation & Setup on Mac](#13-command-line-interface-cli-installation--setup-on-mac)
+    - [1.3 Command Line Interface (CLI): Installation \& Setup on Mac](#13-command-line-interface-cli-installation--setup-on-mac)
   - [2. SQL Statement Fundamentals](#2-sql-statement-fundamentals)
     - [`SELECT`](#select)
     - [`SELECT DISTINCT`](#select-distinct)
@@ -65,12 +69,13 @@ I composed this document after refreshing my SQL knowledge by following [The Com
     - [7.3 `CAST`: Convert One Data Type into Another](#73-cast-convert-one-data-type-into-another)
     - [7.4 `NULLIF()`](#74-nullif)
     - [7.5 Views](#75-views)
-    - [7.6 Import & Export of CSV Tables](#76-import--export-of-csv-tables)
+    - [7.6 Import \& Export of CSV Tables](#76-import--export-of-csv-tables)
   - [8. PostGreSQL with Python](#8-postgresql-with-python)
-  - [Assessments](#assessments)
+  - [9. Assessments](#9-assessments)
     - [Assessment 1 (After Section 3: Fundamentals + `GROUP BY`)](#assessment-1-after-section-3-fundamentals--group-by)
-    - [Assessment 2 (After Section 5: Joins & Advanced Commands)](#assessment-2-after-section-5-joins--advanced-commands)
+    - [Assessment 2 (After Section 5: Joins \& Advanced Commands)](#assessment-2-after-section-5-joins--advanced-commands)
     - [Assessment 3 (After Section 8: `CREATE` Tables)](#assessment-3-after-section-8-create-tables)
+  - [10. MySQL with Python](#10-mysql-with-python)
 
 
 ## 1. Introduction & Setup
@@ -1421,12 +1426,12 @@ Now, we have a query tool to our newly created database and we can start creatin
 -- In this example we do not consider encrypting the pw.
 -- Note that if we execute twice the command, we'll get an error.
 CREATE TABLE account (
-	user_id SERIAL PRIMARY KEY,
-	username VARCHAR(50) UNIQUE NOT NULL,
-	password VARCHAR(50) NOT NULL,
-	email VARCHAR(250) UNIQUE NOT NULL,
-	created_on TIMESTAMP NOT NULL,
-	last_login TIMESTAMP
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(50) NOT NULL,
+    email VARCHAR(250) UNIQUE NOT NULL,
+    created_on TIMESTAMP NOT NULL,
+    last_login TIMESTAMP
 )
 -- Table 2: job
 CREATE TABLE job (
@@ -1442,7 +1447,7 @@ CREATE TABLE job (
 CREATE TABLE account_job (
     user_id INTEGER REFERENCES account(user_id),
     job_id INTEGER REFERENCES account(user_id),
-	hired_date TIMESTAMP
+    hired_date TIMESTAMP
 );
 ```
 
@@ -1484,30 +1489,30 @@ SELECT * FROM account;
 -- and also the fact that we don't insert the last login
 INSERT INTO account (username, password, email, created_on)
 VALUES
-	('Jose', 'password', 'jose@email.com', CURRENT_TIMESTAMP);
+    ('Jose', 'password', 'jose@email.com', CURRENT_TIMESTAMP);
 -- Step 3: Check account again: new row appears
 SELECT * FROM account;
 -- Step 4: Insert new jobs
 INSERT INTO job (job_name)
 VALUES
-	('Astronaut');
+    ('Astronaut');
 --
 INSERT INTO job (job_name)
 VALUES
-	('President')
+    ('President')
 -- Step 5: Check new jobs are in the table
 SELECT * FROM account;
 -- Step 6: Insert entries to account_job
 INSERT INTO account_job (user_id, job_id, hired_date)
 VALUES
-	(1, 1, CURRENT_TIMESTAMP);
+    (1, 1, CURRENT_TIMESTAMP);
 -- Step 7: Check new row in account_job
 SELECT * FROM account_job;
 -- Step 8: Violate the foreign key constraint to get an error
 -- PostgreSQL keeps the consistency! 
 INSERT INTO account_job (user_id, job_id, hired_date)
 VALUES
-	(10, 10, CURRENT_TIMESTAMP);
+    (10, 10, CURRENT_TIMESTAMP);
 ```
 
 ### 6.6 `UPDATE` the Rows of a Table
@@ -1604,7 +1609,7 @@ Examples with `learning_db`:
 -- Insert a new job
 INSERT INTO job(job_name)
 VALUES
-	('Cowboy')
+    ('Cowboy')
 -- Remove that job and get row back as output
 DELETE FROM job
 WHERE job_name = 'Cowboy'
@@ -1824,17 +1829,17 @@ Examples with the `dvdrental` database:
 -- We label them according to their customer_id
 SELECT customer_id,
 CASE
-	WHEN (customer_id <= 100) THEN 'Premium'
-	WHEN (customer_id BETWEEN 100 and 200) THEN 'Plus'
-	ELSE 'Normal'
+    WHEN (customer_id <= 100) THEN 'Premium'
+    WHEN (customer_id BETWEEN 100 and 200) THEN 'Plus'
+    ELSE 'Normal'
 END AS customer_class
 FROM customer
 -- Suppose we have a raffle and the winner and second price are ids 2 & 5, resp.
 SELECT customer_id,
 CASE customer_id
-	WHEN 2 THEN 'Winner'
-	WHEN 5 THEN 'Second Place'
-	ELSE 'Normal'
+    WHEN 2 THEN 'Winner'
+    WHEN 5 THEN 'Second Place'
+    ELSE 'Normal'
 END AS raffle_results
 FROM customer
 -- Creative example:
@@ -1847,16 +1852,16 @@ FROM customer
 -- - It is quite common to use this structure
 SELECT
 SUM(CASE rental_rate
-	WHEN 0.99 THEN 1
-	ELSE 0
+    WHEN 0.99 THEN 1
+    ELSE 0
 END) AS bargains,
 SUM(CASE rental_rate
-	WHEN 2.99 THEN 1
-	ELSE 0
+    WHEN 2.99 THEN 1
+    ELSE 0
 END) AS regular,
 SUM(CASE rental_rate
-	WHEN 4.99 THEN 1
-	ELSE 0
+    WHEN 4.99 THEN 1
+    ELSE 0
 END) AS premium
 FROM film
 ```
@@ -1870,16 +1875,16 @@ SELECT DISTINCT rating FROM film
 --
 SELECT
 SUM(CASE rating
-	WHEN 'R' THEN 1
-	ELSE 0
+    WHEN 'R' THEN 1
+    ELSE 0
 END) AS r,
 SUM(CASE rating
-	WHEN 'PG' THEN 1
-	ELSE 0
+    WHEN 'PG' THEN 1
+    ELSE 0
 END) AS pg,
 SUM(CASE rating
-	WHEN 'PG-13' THEN 1
-	ELSE 0
+    WHEN 'PG-13' THEN 1
+    ELSE 0
 END) AS pg13
 FROM film;
 ```
@@ -1937,13 +1942,13 @@ For testing purposes, we create a database which contains that example: `test_db
 ```sql
 -- Create table with names & departments
 CREATE TABLE depts (
-	first_name VARCHAR(50),
-	department VARCHAR(50)
+    first_name VARCHAR(50),
+    department VARCHAR(50)
 );
 -- Insert values to table
 INSERT INTO depts (
-	first_name,
-	department
+    first_name,
+    department
 )
 VALUES
 ('Vinton', 'A'),
@@ -1954,8 +1959,8 @@ SELECT * FROM depts;
 -- Now, we compute the ratio
 -- The result is 2; luckily, there are rows with department = 'B'
 SELECT (
-	SUM (CASE WHEN department = 'A' THEN 1 ELSE 0 END) /
-	SUM (CASE WHEN department = 'B' THEN 1 ELSE 0 END)
+    SUM (CASE WHEN department = 'A' THEN 1 ELSE 0 END) /
+    SUM (CASE WHEN department = 'B' THEN 1 ELSE 0 END)
 ) AS department_ratio
 FROM depts;
 -- We delete those rows with department 'B'
@@ -1968,11 +1973,11 @@ WHERE department = 'B'
 -- If the sum is 0, we return NULL, thus the ratio is NULL, and we get no error
 -- Otherwise, the sum is returned and the ratio is computed with the division!
 SELECT (
-	SUM (CASE WHEN department = 'A' THEN 1 ELSE 0 END) /
-	NULLIF (
-		SUM (CASE WHEN department = 'B' THEN 1 ELSE 0 END),
-		0
-	)	
+    SUM (CASE WHEN department = 'A' THEN 1 ELSE 0 END) /
+    NULLIF (
+        SUM (CASE WHEN department = 'B' THEN 1 ELSE 0 END),
+        0
+    )	
 ) AS department_ratio
 FROM depts;
 ```
@@ -2070,7 +2075,7 @@ brew install libpq
 # pip install psycopg2
 # So after googling, I installed a previous version
 pip install psycopg2-binary==2.9.2
-````
+```
 
 Then, we follow these simple steps:
 1. We connect to the SQL server with the database name, our username and password.
@@ -2160,7 +2165,8 @@ cur.commit()
 
 ```
 
-## Assessments
+## 9. Assessments
+
 ### Assessment 1 (After Section 3: Fundamentals + `GROUP BY`)
 
 1. Return the customer IDs of customers who have spent at least $110 with the staff member who has an ID of 2.
@@ -2325,59 +2331,70 @@ AND surname LIKE 'Farrell'
 ```sql
 -- students
 CREATE TABLE students (
-	student_id SERIAL PRIMARY KEY, 
-	first_name VARCHAR(50) NOT NULL,
-	last_name VARCHAR(50) NOT NULL, 
-	homeroom_number SMALLINT,
-	phone VARCHAR(20) UNIQUE NOT NULL,
-	email VARCHAR(100) UNIQUE,
-	graduation DATE CHECK (graduation > '1970-01-01')
+    student_id SERIAL PRIMARY KEY, 
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL, 
+    homeroom_number SMALLINT,
+    phone VARCHAR(20) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE,
+    graduation DATE CHECK (graduation > '1970-01-01')
 )
 -- teachers
 CREATE TABLE teachers (
-	teacher_id SERIAL PRIMARY KEY,
-	first_name VARCHAR(50) NOT NULL,
-	last_name VARCHAR(50) NOT NULL,
-	homeroom_number SMALLINT,
-	department VARCHAR(100),
-	email VARCHAR(100) UNIQUE NOT NULL, 
-	phone VARCHAR(20) UNIQUE
+    teacher_id SERIAL PRIMARY KEY,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    homeroom_number SMALLINT,
+    department VARCHAR(100),
+    email VARCHAR(100) UNIQUE NOT NULL, 
+    phone VARCHAR(20) UNIQUE
 -- insert a student
 INSERT INTO students
 (
-	first_name,
-	last_name,
-	homeroom_number,
-	phone,
-	graduation
+    first_name,
+    last_name,
+    homeroom_number,
+    phone,
+    graduation
 )
 VALUES
 (
-	'Mark',
-	'Watney', 
-	5,
-	'777-555-1234',
-	'2035-01-01'
+    'Mark',
+    'Watney', 
+    5,
+    '777-555-1234',
+    '2035-01-01'
 )
 -- insert a teacher
 INSERT INTO teachers
 (
-	first_name,
-	last_name,
-	homeroom_number,
-	phone,
-	department,
-	email
+    first_name,
+    last_name,
+    homeroom_number,
+    phone,
+    department,
+    email
 )
 VALUES
 (
-	'Jonas',
-	'Salk', 
-	5,
-	'777-555-4321',
-	'Biology',
-	'jsalk@school.org'
+    'Jonas',
+    'Salk', 
+    5,
+    '777-555-4321',
+    'Biology',
+    'jsalk@school.org'
 )
 )
 ```
+
+## 10. MySQL with Python
+
+The previous sections have introduced PostgreSQL; this section deals with [MySQL](https://www.mysql.com/), which the the structured database implementation by Oracle. To known more about the differences of both, check: [PostgreSQL vs. MySQL](https://kinsta.com/blog/postgresql-vs-mysql/); in short, PostgreSQL seems to be more sophisticated, thus more appropriate for large and scalable scenarios.
+
+This section summarizes the content from [Python MySQL @ W3Schools](https://www.w3schools.com/python/python_mysql_getstarted.asp).
+
+To install MySQL, follow the instructions:
+
+- [Mac](https://dev.mysql.com/doc/refman/5.7/en/macos-installation-pkg.html)
+- [Windows](https://dev.mysql.com/doc/refman/5.7/en/windows-installation.html)
 
