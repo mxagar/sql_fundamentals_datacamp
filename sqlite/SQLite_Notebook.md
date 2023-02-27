@@ -218,6 +218,7 @@ print(result)
 
 
 ```python
+
 # A new database file will be created, if none exists
 # Creating and connecting is very similar
 engine = db.create_engine('sqlite:///students.sqlite')
@@ -237,6 +238,7 @@ metadata = db.MetaData()
 #       Boolean()
 #       Date()
 #       Time()
+#       DateTime(timezone=True)
 #       Numeric()
 #       LargeBinary() = BLOB, images, etc.
 #       PickleType() = PickleType builds upon the Binary type to apply Python’s pickle.dumps()
@@ -263,6 +265,7 @@ metadata.create_all(engine)
 
 
 ```python
+
 # Insert one row
 # Note: if we added 'sqlite_autoincrement=True' in the table definition,
 # the primary key increases automatically, thus, we cannot insert its value.
@@ -274,6 +277,7 @@ query = db.insert(Student).values(#Id=1,
                                   Major="English",
                                   Pass=True)
 result = conn.execute(query)
+#conn.commit() # Necessary to commit changes in version >=2.0
 
 # Check: fetch all rows
 output = conn.execute(Student.select()).fetchall()
@@ -281,7 +285,7 @@ print(output)
 
 ```
 
-    [(1, 'Matthew', 'English', True), (2, 'Matthew', 'English', True), (3, 'Matthew', 'English', True), (4, 'Matthew', 'English', True), (5, 'Matthew', 'English', True), (6, 'Matthew', 'English', True), (7, 'Matthew', 'English', True), (8, 'Matthew', 'English', True), (9, 'Matthew', 'English', True), (10, 'Matthew', 'English', True), (11, 'Matthew', 'English', True), (12, 'Matthew', 'English', True), (13, 'Matthew', 'English', True), (14, 'Matthew', 'English', True), (15, 'Matthew', 'English', True)]
+    [(1, 'Matthew', 'English', True), (2, 'Matthew', 'English', True)]
 
 
 
@@ -296,13 +300,14 @@ values_list = [{'Name':'Nisha', 'Major':"Science", 'Pass':False},
               {'Name':'Natasha', 'Major':"Math", 'Pass':True},
               {'Name':'Ben', 'Major':"English", 'Pass':False}]
 result = conn.execute(query,values_list)
+#conn.commit() # Necessary to commit changes in version >=2.0
 
 # Check: fetch all rows
 output = conn.execute(Student.select()).fetchall()
 print(output)
 ```
 
-    [(1, 'Matthew', 'English', True), (2, 'Matthew', 'English', True), (3, 'Matthew', 'English', True), (4, 'Matthew', 'English', True), (5, 'Matthew', 'English', True), (6, 'Matthew', 'English', True), (7, 'Matthew', 'English', True), (8, 'Matthew', 'English', True), (9, 'Matthew', 'English', True), (10, 'Matthew', 'English', True), (11, 'Matthew', 'English', True), (12, 'Matthew', 'English', True), (13, 'Matthew', 'English', True), (14, 'Matthew', 'English', True), (15, 'Matthew', 'English', True), (16, 'Nisha', 'Science', False), (17, 'Natasha', 'Math', True), (18, 'Ben', 'English', False), (19, 'Nisha', 'Science', False), (20, 'Natasha', 'Math', True), (21, 'Ben', 'English', False)]
+    [(1, 'Matthew', 'English', True), (2, 'Matthew', 'English', True), (3, 'Nisha', 'Science', False), (4, 'Natasha', 'Math', True), (5, 'Ben', 'English', False)]
 
 
 ### 2.3 Queries: Examples with SQL and with SQLAlchemy
@@ -313,7 +318,7 @@ output = conn.execute("SELECT * FROM Student")
 print(output.fetchall())
 ```
 
-    [(1, 'Matthew', 'English', 1), (2, 'Matthew', 'English', 1), (3, 'Matthew', 'English', 1), (4, 'Matthew', 'English', 1), (5, 'Matthew', 'English', 1), (6, 'Matthew', 'English', 1), (7, 'Matthew', 'English', 1), (8, 'Matthew', 'English', 1), (9, 'Matthew', 'English', 1), (10, 'Matthew', 'English', 1), (11, 'Matthew', 'English', 1), (12, 'Matthew', 'English', 1), (13, 'Matthew', 'English', 1), (14, 'Matthew', 'English', 1), (15, 'Matthew', 'English', 1), (16, 'Nisha', 'Science', 0), (17, 'Natasha', 'Math', 1), (18, 'Ben', 'English', 0), (19, 'Nisha', 'Science', 0), (20, 'Natasha', 'Math', 1), (21, 'Ben', 'English', 0)]
+    [(1, 'Matthew', 'English', 1), (2, 'Matthew', 'English', 1), (3, 'Nisha', 'Science', 0), (4, 'Natasha', 'Math', 1), (5, 'Ben', 'English', 0)]
 
 
 
@@ -322,7 +327,7 @@ output = conn.execute("SELECT Name, Major FROM Student WHERE Pass = True")
 print(output.fetchall())
 ```
 
-    [('Matthew', 'English'), ('Matthew', 'English'), ('Matthew', 'English'), ('Matthew', 'English'), ('Matthew', 'English'), ('Matthew', 'English'), ('Matthew', 'English'), ('Matthew', 'English'), ('Matthew', 'English'), ('Matthew', 'English'), ('Matthew', 'English'), ('Matthew', 'English'), ('Matthew', 'English'), ('Matthew', 'English'), ('Matthew', 'English'), ('Natasha', 'Math'), ('Natasha', 'Math')]
+    [('Matthew', 'English'), ('Matthew', 'English'), ('Natasha', 'Math')]
 
 
 
@@ -333,7 +338,7 @@ output = conn.execute(query)
 print(output.fetchall())
 ```
 
-    [(1, 'Matthew', 'English', True), (2, 'Matthew', 'English', True), (3, 'Matthew', 'English', True), (4, 'Matthew', 'English', True), (5, 'Matthew', 'English', True), (6, 'Matthew', 'English', True), (7, 'Matthew', 'English', True), (8, 'Matthew', 'English', True), (9, 'Matthew', 'English', True), (10, 'Matthew', 'English', True), (11, 'Matthew', 'English', True), (12, 'Matthew', 'English', True), (13, 'Matthew', 'English', True), (14, 'Matthew', 'English', True), (15, 'Matthew', 'English', True), (18, 'Ben', 'English', False), (21, 'Ben', 'English', False)]
+    [(1, 'Matthew', 'English', True), (2, 'Matthew', 'English', True), (5, 'Ben', 'English', False)]
 
 
 
@@ -345,7 +350,7 @@ output = conn.execute(query)
 print(output.fetchall())
 ```
 
-    [(18, 'Ben', 'English', False), (21, 'Ben', 'English', False)]
+    [(5, 'Ben', 'English', False)]
 
 
 
@@ -427,119 +432,14 @@ data
     </tr>
     <tr>
       <th>2</th>
-      <td>3</td>
-      <td>Matthew</td>
-      <td>English</td>
+      <td>4</td>
+      <td>Natasha</td>
+      <td>Math</td>
       <td>True</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>4</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>4</th>
       <td>5</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>6</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>6</th>
-      <td>7</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>7</th>
-      <td>8</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>8</th>
-      <td>9</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>9</th>
-      <td>10</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>10</th>
-      <td>11</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>11</th>
-      <td>12</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>12</th>
-      <td>13</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>13</th>
-      <td>14</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>14</th>
-      <td>15</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>15</th>
-      <td>17</td>
-      <td>Natasha</td>
-      <td>Math</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>16</th>
-      <td>18</td>
-      <td>Ben</td>
-      <td>English</td>
-      <td>False</td>
-    </tr>
-    <tr>
-      <th>17</th>
-      <td>20</td>
-      <td>Natasha</td>
-      <td>Math</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>18</th>
-      <td>21</td>
       <td>Ben</td>
       <td>English</td>
       <td>False</td>
@@ -602,6 +502,18 @@ for r in result:
     ('HSI', '1987-01-07', 2607.100098, 2607.100098, 2607.100098, 2607.100098, 2607.100098, 0.0, 338.92301274)
 
 
+
+```python
+result[1].keys()
+```
+
+
+
+
+    RMKeyView(['Index', 'Date', 'Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume', 'CloseUSD'])
+
+
+
 ## 3. SQL Table Management
 
 
@@ -629,9 +541,9 @@ for r in result:
 
     (1, 'Matthew', 'English', True)
     (2, 'Matthew', 'English', True)
-    (3, 'Matthew', 'English', True)
-    (4, 'Matthew', 'English', True)
-    (5, 'Matthew', 'English', True)
+    (3, 'Nisha', 'Science', False)
+    (4, 'Natasha', 'Math', True)
+    (5, 'Ben', 'English', False)
 
 
 ### 3.1 Update and Delete Rows
@@ -644,6 +556,7 @@ for r in result:
 # table.update().values(column_1=1, column_2=4,...).where(table.columns.column_5 >= 5)
 query = student.update().values(Pass = True).where(student.columns.Name == "Nisha")
 results = conn.execute(query)
+#conn.commit() # Necessary to commit changes in version >=2.0
 
 # Check
 output = conn.execute(Student.select()).fetchall()
@@ -697,132 +610,20 @@ data
     <tr>
       <th>2</th>
       <td>3</td>
-      <td>Matthew</td>
-      <td>English</td>
+      <td>Nisha</td>
+      <td>Science</td>
       <td>True</td>
     </tr>
     <tr>
       <th>3</th>
       <td>4</td>
-      <td>Matthew</td>
-      <td>English</td>
+      <td>Natasha</td>
+      <td>Math</td>
       <td>True</td>
     </tr>
     <tr>
       <th>4</th>
       <td>5</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>6</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>6</th>
-      <td>7</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>7</th>
-      <td>8</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>8</th>
-      <td>9</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>9</th>
-      <td>10</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>10</th>
-      <td>11</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>11</th>
-      <td>12</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>12</th>
-      <td>13</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>13</th>
-      <td>14</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>14</th>
-      <td>15</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>15</th>
-      <td>16</td>
-      <td>Nisha</td>
-      <td>Science</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>16</th>
-      <td>17</td>
-      <td>Natasha</td>
-      <td>Math</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>17</th>
-      <td>18</td>
-      <td>Ben</td>
-      <td>English</td>
-      <td>False</td>
-    </tr>
-    <tr>
-      <th>18</th>
-      <td>19</td>
-      <td>Nisha</td>
-      <td>Science</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>19</th>
-      <td>20</td>
-      <td>Natasha</td>
-      <td>Math</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>20</th>
-      <td>21</td>
       <td>Ben</td>
       <td>English</td>
       <td>False</td>
@@ -839,6 +640,7 @@ data
 # table.delete().where(table.columns.column_1 == 6)
 query = Student.delete().where(Student.columns.Name == "Ben")
 results = conn.execute(query)
+#conn.commit() # Necessary to commit changes in version >=2.0
 
 # Check
 output = conn.execute(Student.select()).fetchall()
@@ -892,118 +694,13 @@ data
     <tr>
       <th>2</th>
       <td>3</td>
-      <td>Matthew</td>
-      <td>English</td>
+      <td>Nisha</td>
+      <td>Science</td>
       <td>True</td>
     </tr>
     <tr>
       <th>3</th>
       <td>4</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>5</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>6</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>6</th>
-      <td>7</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>7</th>
-      <td>8</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>8</th>
-      <td>9</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>9</th>
-      <td>10</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>10</th>
-      <td>11</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>11</th>
-      <td>12</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>12</th>
-      <td>13</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>13</th>
-      <td>14</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>14</th>
-      <td>15</td>
-      <td>Matthew</td>
-      <td>English</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>15</th>
-      <td>16</td>
-      <td>Nisha</td>
-      <td>Science</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>16</th>
-      <td>17</td>
-      <td>Natasha</td>
-      <td>Math</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>17</th>
-      <td>19</td>
-      <td>Nisha</td>
-      <td>Science</td>
-      <td>True</td>
-    </tr>
-    <tr>
-      <th>18</th>
-      <td>20</td>
       <td>Natasha</td>
       <td>Math</td>
       <td>True</td>
@@ -1018,12 +715,14 @@ data
 
 
 ```python
+
 # First, we need to close all queries!
 # Otherwise, we get the error that the database is locked
 results.close()
 exe.close()
 # Then, we can drop the desired tables; if none specified, all dropped: metadata.drop_all(engine)
 metadata.drop_all(engine, [student], checkfirst=True)
+#conn.commit() # Necessary to commit changes in version >=2.0
 ```
 
 ### 3.3 Complex Queries with SQLAlchemy: Joining Tables and Filtering
