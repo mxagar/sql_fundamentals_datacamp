@@ -75,7 +75,15 @@ I composed this document after refreshing my SQL knowledge by following several 
     - [Assessment 1 (After Section 3: Fundamentals + `GROUP BY`)](#assessment-1-after-section-3-fundamentals--group-by)
     - [Assessment 2 (After Section 5: Joins \& Advanced Commands)](#assessment-2-after-section-5-joins--advanced-commands)
     - [Assessment 3 (After Section 8: `CREATE` Tables)](#assessment-3-after-section-8-create-tables)
-  - [10. MySQL with Python](#10-mysql-with-python)
+  - [10. SQLite + SQLAlchemy with Python](#10-sqlite--sqlalchemy-with-python)
+    - [Installation](#installation)
+    - [Datasets and Code](#datasets-and-code)
+    - [SQLite CLI](#sqlite-cli)
+    - [SQLite with SQLAlchemy](#sqlite-with-sqlalchemy)
+    - [More About SQLAlchemy](#more-about-sqlalchemy)
+  - [11. MySQL with Python](#11-mysql-with-python)
+    - [Installation](#installation-1)
+    - [Connecting ad Database](#connecting-ad-database)
 
 
 ## 1. Introduction & Setup
@@ -2387,14 +2395,109 @@ VALUES
 )
 ```
 
-## 10. MySQL with Python
+## 10. SQLite + SQLAlchemy with Python
 
-The previous sections have introduced PostgreSQL; this section deals with [MySQL](https://www.mysql.com/), which the the structured database implementation by Oracle. To known more about the differences of both, check: [PostgreSQL vs. MySQL](https://kinsta.com/blog/postgresql-vs-mysql/); in short, PostgreSQL seems to be more sophisticated, thus more appropriate for large and scalable scenarios.
+This section summarizes how to use [SQLite](https://www.sqlite.org/index.html) and [SQLAlchemy](https://www.sqlalchemy.org/). SQLite makes possible to use relatively small a non-distributed databases (i.e., in one file/location) but *without a server*, i.e., we have the database in a unique file with which we interact. The advantage is that we can have large amounts of data in different tables while still being able to interface and query the data with SQL.
+
+SQLAlchemy makes possible to create and use python objects to interact with the database. We connect a database to an SQLAlchemy instance and can start interacting with it. There are two main APIs:
+
+- Core: we use SQLAlchemy python objects to define `Tables`, `Queries`, etc.
+- ORM: we create those objects manually using OOP (classes).
+
+Resources: 
+
+- [SQLAlchemy Tutorial With Examples](https://www.datacamp.com/tutorial/sqlalchemy-tutorial-examples)
+- [Data Management With Python, SQLite, and SQLAlchemy](https://realpython.com/python-sqlite-sqlalchemy/)
+
+### Installation
+
+```bash
+brew install sqlite
+pip install SQLAlchemy # My current version: 1.4.39
+```
+
+### Datasets and Code
+
+In this section, different datasets are used and custom ones created. All are in the folder `./sqlite`, along with the Jupyter notebook [`./sqlite/SQLite_Notebook.ipynb`](./sqlite/SQLite_Notebook.ipynb), which uses them.
+
+Links to datasets/database files:
+
+- [European Football Database @ Kaggle](https://www.kaggle.com/datasets/groleo/european-football-database?select=european_database.sqlite): [`./sqlite/european_database.sqlite`](./sqlite/european_database.sqlite)
+- [Stock Exchange Data @ Datacamp](https://www.datacamp.com/workspace/datasets/dataset-python-stock-exchange): [`./sqlite/stock.sqlite`](./sqlite/stock.sqlite)
+- Custom created students dataset: [`./sqlite/students.sqlite`](./sqlite/students.sqlite)
+
+### SQLite CLI
+
+SQLite has a CLI which we can use for SQL interaction: `sqlite3`.
+
+Documentation: [https://sqlite.org/cli.html](https://sqlite.org/cli.html)
+
+We can interact with
+
+- SQL statements: always terminated with `;` and `/` to break lines
+- dot-commands: always start with `.` and have a single line
+- CLI comments: preceded with `#`
+
+```bash
+cd sqlite
+# Enter SQLite terminal
+sqlite3
+# Open a DB
+.open students.sqlite
+# Show tables
+.tables # Student
+select * from Student;
+# 1|Matthew|English|1
+# 2|Matthew|English|1
+# 3|Matthew|English|1
+# ...
+# Exit SQLite CLI terminal
+.quit
+```
+
+### SQLite with SQLAlchemy
+
+The following files cover the code snippets:
+
+- [`./sqlite/SQLite_Notebook.ipynb`](./sqlite/SQLite_Notebook.ipynb)
+- [`./sqlite/SQLite_Notebook.md`](./sqlite/SQLite_Notebook.md): previous fiile converted to Markdown: `jupyter nbconvert --to markdown SQLite_Notebook.ipynb `
+
+The following topics are covered:
+
+- 1. Basics
+  - 1.1 Connect to or Open Database
+  - 1.2. Access to Tables and Columns
+  - 1.3 Queries
+- 2. Creating a New Database and Working with It
+  - 2.1 Create a New Database
+  - 2.2 Inserting Rows
+  - 2.3 Queries: Examples with SQL and with SQLAlchemy
+  - 2.4 Output to a Pandas Dataframe and CSV
+  - 2.5 Input from CSV and Pandas
+- 3. SQL Table Management
+  - 3.1 Update and Delete Rows
+  - 3.2 Dropping Tables
+  - 3.3 Complex Queries with SQLAlchemy: Joining Tables and Filtering
+
+### More About SQLAlchemy
+
+[SQLAlchemy](https://www.sqlalchemy.org/) works with many SQL database types, not only SQLite: PostgreSQL, MySQL, etc. More interestingly, we can use the ORM API, with which we define tables as class and work with them in a more pythonic way. In my [flask_guide](https://github.com/mxagar/flask_guide) I have some examples.
+
+## 11. MySQL with Python
+
+The previous sections have introduced PostgreSQL and SQLite; this section deals with [MySQL](https://www.mysql.com/), which is the structured database implementation by Oracle; it handles larger databases than SQLite, and it resembles mode PostgerSQL. To know more about the differences of both, check: [PostgreSQL vs. MySQL](https://kinsta.com/blog/postgresql-vs-mysql/); in short, PostgreSQL seems to be more sophisticated, thus more appropriate for large and scalable scenarios.
 
 This section summarizes the content from [Python MySQL @ W3Schools](https://www.w3schools.com/python/python_mysql_getstarted.asp).
+
+### Installation
 
 To install MySQL, follow the instructions:
 
 - [Mac](https://dev.mysql.com/doc/refman/5.7/en/macos-installation-pkg.html)
 - [Windows](https://dev.mysql.com/doc/refman/5.7/en/windows-installation.html)
 
+### Connecting ad Database
+
+:construction:
+
+TBD...
