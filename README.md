@@ -7,6 +7,8 @@ I composed this document after refreshing my SQL knowledge by following several 
 - [The Complete SQL Bootcamp](https://www.udemy.com/course/the-complete-sql-bootcamp/), created by José Marcial Portilla (Udemy)
 - [SQL for Data Analysis](https://www.udacity.com/course/sql-for-data-analysis--ud198) by Udacity.
 - [Python MySQL Tutorial](https://www.w3schools.com/python/python_mysql_getstarted.asp) from W3schools.
+- [SQLAlchemy Tutorial With Examples](https://www.datacamp.com/tutorial/sqlalchemy-tutorial-examples)
+- [Data Management With Python, SQLite, and SQLAlchemy](https://realpython.com/python-sqlite-sqlalchemy/)
 
 Mikel Sagardia, 2022.  
 No warranties.
