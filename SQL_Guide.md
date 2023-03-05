@@ -81,7 +81,8 @@ I composed this document after refreshing my SQL knowledge by following several 
     - [SQLite CLI](#sqlite-cli)
     - [SQLite with SQLAlchemy](#sqlite-with-sqlalchemy)
     - [More About SQLAlchemy](#more-about-sqlalchemy)
-    - [Example Project](#example-project)
+    - [SQLite with sqlite3 in Python](#sqlite-with-sqlite3-in-python)
+    - [SQLite + SQLAlchemy: Example Project](#sqlite--sqlalchemy-example-project)
   - [11. MySQL with Python](#11-mysql-with-python)
     - [Installation](#installation-1)
     - [Connecting ad Database](#connecting-ad-database)
@@ -2484,7 +2485,77 @@ The following topics are covered:
 
 [SQLAlchemy](https://www.sqlalchemy.org/) works with many SQL database types, not only SQLite: PostgreSQL, MySQL, etc. More interestingly, we can use the ORM API, with which we define tables as class and work with them in a more pythonic way. In my [flask_guide](https://github.com/mxagar/flask_guide) I have some examples.
 
-### Example Project
+### SQLite with sqlite3 in Python
+
+Apart from using SQLAlchemy, we can use the SQLite package `sqlite3` in python (included in the standard library). In the following, some example lines are provided:
+
+```python
+# Write to SQLite using sqlite3
+# Alternative: SQLAlchemy
+import sqlite3
+# Connect to database; file created if not present
+conn = sqlite3.connect('dataset.db')
+# Load Table A - or create one
+df_A = pd.read_csv('dataset_A.csv')
+# Load Table B - or create one
+df_B = pd.read_csv('dataset_B.csv')
+# Clean, if necessary
+columns = [col.replace(' ', '_') for col in df_A.columns]
+df_A.columns = columns
+# ...
+# Write tables to database
+df_A.to_sql("table_A", conn, if_exists="replace", index=False)
+df_B.to_sql("table_B", conn, if_exists="replace", index=False)
+# Check (i.e., read)
+df_A_ = pd.read_sql('SELECT * FROM table_A', conn)
+df_B_ = pd.read_sql('SELECT * FROM table_B', conn)
+# Commit changes and close connection
+conn.commit()
+conn.close()
+```
+
+The standard `sqlite3` package and SQLite itself are limited in terms of capabilities; for instance, once we create a table with its primary key, we cannot change the key, i.e., we need to drop the table and recreate it. In the following, an example of how a table can be created using SQL and values added.
+
+```python
+# Insert rows to SQLite
+# WARNING: use better to_sql() and pass entire tables
+# i.e., don't insert row-by-row in a for loop...
+# Connect to the data base, create if file not there
+conn = sqlite3.connect('database.db')
+# Get a cursor
+cur = conn.cursor()
+# Drop the test table in case it already exists
+cur.execute("DROP TABLE IF EXISTS test")
+# Create the test table including project_id as a primary key
+cur.execute("CREATE TABLE test (project_id TEXT PRIMARY KEY, countryname TEXT, countrycode TEXT, totalamt REAL, year INTEGER);")
+# Insert a single row of value into the test table
+project_id = 'a'
+countryname = 'Brazil'
+countrycode = 'BRA'
+totalamt = '100,000'
+year = 1970
+sql_statement = f"INSERT INTO test (project_id, countryname, countrycode, totalamt, year) VALUES ('{project_id}', '{countryname}', '{countrycode}', '{totalamt}', {year});"
+cur.execute(sql_statement)
+# Commit changes made to the database
+conn.commit()
+# Select all from the test table
+cur.execute("SELECT * FROM test")
+cur.fetchall()
+# [('a', 'Brazil', 'BRA', '100,000', 1970)]
+# Insert several rows:
+for index, values in df.iterrows():
+    project_id, countryname, countrycode, totalamt, year = values
+    sql_statement = f"INSERT INTO test (project_id, countryname, countrycode, totalamt, year) VALUES ('{project_id}', '{countryname}', '{countrycode}', '{totalamt}', {year});"
+    cur.execute(sql_string)
+# Commit changes to the dataset after any changes are made
+conn.commit()
+# ...
+# Commit changes and close connection
+conn.commit()
+conn.close()
+```
+
+### SQLite + SQLAlchemy: Example Project
 
 [churn_model_monitoring](https://github.com/mxagar/churn_model_monitoring) / `db_setup.py`:
 
