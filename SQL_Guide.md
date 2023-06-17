@@ -1,6 +1,6 @@
 # SQL Guide
 
-This file contains my personal guide on SQL. All levels are covered progressively.
+This file contains my personal guide on SQL. All levels are covered progressively and additional technical details on Relational Databases are provided.
 
 If you are looking for a cheat sheet rather than a guide, check the co-located file [`sql_catalogue.txt`](sql_catalogue.txt), which I plan to complete sometime.
 
@@ -16,7 +16,11 @@ I composed this document after refreshing my SQL knowledge by following several 
   - [1. Introduction \& Setup](#1-introduction--setup)
     - [1.1 Installation: `PostgreSQL` \& `pgAdmin`](#11-installation-postgresql--pgadmin)
     - [1.2 `pgAdmin` Overview](#12-pgadmin-overview)
-    - [1.3 Command Line Interface (CLI): Installation \& Setup on Mac](#13-command-line-interface-cli-installation--setup-on-mac)
+    - [1.3 Command Line Interface (CLI) psql: Installation \& Setup](#13-command-line-interface-cli-psql-installation--setup)
+      - [Mac](#mac)
+      - [Windows](#windows)
+      - [WSL 2 (and Linux in general)](#wsl-2-and-linux-in-general)
+      - [Basic psql Commands](#basic-psql-commands)
   - [2. SQL Statement Fundamentals](#2-sql-statement-fundamentals)
     - [`SELECT`](#select)
     - [`SELECT DISTINCT`](#select-distinct)
@@ -113,7 +117,9 @@ Also, an example database `dvdrentals` from the Udemy course is restored.
 ```
 
 Install PostgreSQL
-    Download PostgreSQL installer from web (V. 14.2): https://www.postgresql.org/download/macosx/
+    Download PostgreSQL installer from web (V. 14.2 - 15.3):
+        https://www.postgresql.org/download/macosx/
+        https://www.postgresql.org/download/windows/
     Click on intaller
     Select/leave default
     Password
@@ -128,8 +134,8 @@ Install PostgreSQL
 
 Install pgAdmin
     Download pgAdmin from web: https://www.pgadmin.org/download/
-        pgAdmin 4 - v6.5
-        Download the DMG file: pgadmin4-6.5.dmg
+        pgAdmin 4 - v6.5 / v7.3
+        Download the DMG file: pgadmin4-6.5.dmg / .exe
     Click on DMG installed: drag & drop app to Applications folder
 
 Restart computer
@@ -205,7 +211,15 @@ DB, right click -> Query Tool (dvdrental)
     To execute a query: Run / Play / F5
 ```
 
-### 1.3 Command Line Interface (CLI): Installation & Setup on Mac
+### 1.3 Command Line Interface (CLI) psql: Installation & Setup
+
+Note that we always need a user+password for the database (in Postgres).
+
+Postgres creates automatically a `postgres` user with admin privileges; its associated default password is `postgres`.
+
+However, we will usually create a new user+password.
+
+#### Mac
 
 I found the following URL and followed what's explained in it:
 [https://www.timescale.com/blog/how-to-install-psql-on-mac-ubuntu-debian-windows/](https://www.timescale.com/blog/how-to-install-psql-on-mac-ubuntu-debian-windows/)
@@ -234,9 +248,144 @@ psql -h localhost -p 5432 -U postgres -W -d dvdrental
 SELECT COUNT(*) FROM film;
 # For help
 help
+# 
 # To exit the connection
 \q
 ```
+
+#### Windows
+
+The `psql` binary should be installed in the system.
+We add to the environment variables where the path where it is, e.g.
+
+    C:\Program Files\PostgreSQL\15\bin
+
+Then, we can start a PS or cmd shell and use `psql` as follows:
+
+```powershell
+#psql -h [HOSTNAME] -p [PORT] -U [USERNAME] -W -d [DATABASENAME]
+psql -h localhost -p 5432 -U postgres -W -d dvdrental
+# PostgreSQL user (postgres) pw is requested due to option -W: we insert the defined one
+# The prompt appears
+# dvdrental=#
+
+# Note that we might be accessing a DB which sits remotely
+# so we have a portforwarding to a given port
+psql -h localhost -p 35432 -U dbadmin -W -d my_db
+# PostgreSQL user (dbadmin) pw is requested due to option -W: we insert the defined one
+# The prompt appears
+# my_db=#
+# Now, we can enter in the prompt any SQL query we want
+# but with proper capitals and ending with ;
+SELECT COUNT(*) FROM table;
+# For help
+help
+# 
+# To exit the connection
+\q
+```
+
+#### WSL 2 (and Linux in general)
+
+After WSL 2 is correctly installed with a linux distirbution (e.g., Ubuntu), we open a WSL CLI:
+
+```bash
+# Install Postgres and start it
+sudo apt update
+sudo apt upgrade -y
+sudo apt install postgresql postgresql-contrib
+sudo service postgresql start
+
+# Modify the configuration file
+# Replace {version} with installed version
+sudo nano /etc/postgresql/{version}/main/pg_hba.conf
+# Change the METHOD value of following lines.
+# The usual value is peer/... and it needs to be changed to md5
+# The lines refer to the Unix domain socker ("local") and to host IPv4 and IPv6 connections
+# 
+#   # TYPE  DATABASE        USER            ADDRESS                 METHOD
+#   local   all             postgres                                md5
+#   local   all             all                                     md5
+#   host    all             all             127.0.0.1/32            md5
+#   host    all             all             ::1/128                 md5
+#
+# Ctrl+X, Y
+
+# Restart service
+sudo service postgresql restart
+
+# Now we can login
+psql -U postgres # pw: postgres
+
+# NOTE: if the METHOD of the postgres user is NOT changed to md5
+# we can still login with
+sudo -u postgres psql
+```
+
+Links, sources: 
+
+- [Get started with databases on Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/tutorials/wsl-database)
+- [Set up PostgreSQL on WSL2 and Access with pgAdmin on Windows](https://chloesun.medium.com/set-up-postgresql-on-wsl2-and-connect-to-postgresql-with-pgadmin-on-windows-ca7f0b7f38ab)
+
+#### Basic psql Commands
+
+```powershell
+#psql -h [HOSTNAME] -p [PORT] -U [USERNAME] -W -d [DATABASENAME]
+# The prompt appears
+# my_db=#
+
+# Now, we can enter in the prompt any SQL query we want
+# but with proper capitals and ending with ;
+SELECT COUNT(*) FROM table;
+
+# For help
+help
+
+# Help on psql commands
+\?
+
+# List all tables in the database
+\dt
+
+# List all database users + privileges
+\du
+
+# List all databases on the server
+\l
+
+# Connect to another database in the server without leaving psql
+\c
+
+# Describe a specific table, showing its columns and properties
+\d table_name
+
+# Export the contents of a table to a CSV
+# The file is output relative to the CWD where psql was launched, locally,
+# even when we're accessing reomtely to a databse
+\copy my_table TO 'path/to/output.csv' WITH (FORMAT CSV, HEADER);
+
+# Execute SQL commands from a file:
+# It allows you to run a SQL script stored in a file directly within psql
+# The file is read from the CWD where psql was launched, locally,
+# even when we're accessing reomtely to a databse
+\i file.sql
+
+# Open the default text editor to write and execute multi-line SQL queries
+\e
+
+# ENable/disable query timimg
+\timing
+
+# Toggle expanded display mode: result smore readable
+\x
+
+# Change password of user
+\password current_password
+
+# To exit the connection
+\q
+```
+
 
 ## 2. SQL Statement Fundamentals
 
