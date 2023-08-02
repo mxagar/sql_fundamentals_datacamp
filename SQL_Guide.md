@@ -329,7 +329,7 @@ Links, sources:
 
 #### Basic psql Commands
 
-```powershell
+```bash
 #psql -h [HOSTNAME] -p [PORT] -U [USERNAME] -W -d [DATABASENAME]
 # The prompt appears
 # my_db=#
